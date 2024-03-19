@@ -1,5 +1,5 @@
 use axum::Router;
-use miette::{Context, IntoDiagnostic, Result};
+use miette::{IntoDiagnostic, Result};
 
 use cja::{
     server::run_server,

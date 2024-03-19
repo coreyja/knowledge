@@ -3,9 +3,7 @@ use cja::cron::*;
 use crate::AppState;
 
 fn cron_registry() -> CronRegistry<AppState> {
-    let mut registry = CronRegistry::new();
-
-    registry
+    CronRegistry::new()
 }
 
 pub(crate) async fn run_cron(app_state: AppState) -> miette::Result<()> {
