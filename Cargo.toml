@@ -1,0 +1,25 @@
+[package]
+name = "knowledge"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1.78"
+axum = "0.7.4"
+cja = { version = "0.0.0", git = "https://github.com/coreyja/coreyja.com", branch = "main" }
+futures = "0.3.30"
+miette = { version = "5.7.0", features = ["fancy"] }
+sqlx = "0.7.4"
+tokio = "1.36.0"
+tracing = "0.1.40"
+
+[build-dependencies]
+vergen = { version = "8.3.1", features = [
+  "build",
+  "cargo",
+  "git",
+  "gitoxide",
+  "rustc",
+] }
