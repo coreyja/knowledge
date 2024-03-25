@@ -7,6 +7,9 @@ edition = "2021"
 
 [dependencies]
 async-trait = "0.1.78"
+aws-config = "1.1.8"
+aws-sdk-s3 = "1.20.0"
+aws-types = "1.1.8"
 axum = "0.7.4"
 cja = { version = "0.0.0", git = "https://github.com/coreyja/coreyja.com", branch = "main" }
 futures = "0.3.30"

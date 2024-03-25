@@ -2,6 +2,7 @@ use axum::Router;
 use miette::{IntoDiagnostic, Result};
 
 use cja::{
+    app_state,
     server::run_server,
     setup::{setup_sentry, setup_tracing},
     sqlx::{self, postgres::PgPoolOptions, PgPool},
@@ -9,6 +10,8 @@ use cja::{
 
 mod cron;
 mod jobs;
+
+mod routes;
 
 fn main() -> miette::Result<()> {
     let _sentry_guard = setup_sentry();
@@ -28,7 +31,7 @@ async fn _main() -> miette::Result<()> {
 
     tracing::info!("Spawning Tasks");
     let mut futures = vec![
-        tokio::spawn(run_server(Router::new().with_state(app_state.clone()))),
+        tokio::spawn(run_server(routes::routes().with_state(app_state.clone()))),
         tokio::spawn(cja::jobs::worker::job_worker(app_state.clone(), jobs::Jobs)),
     ];
     if std::env::var("CRON_DISABLED").unwrap_or_else(|_| "true".to_string()) != "true" {
@@ -47,6 +50,29 @@ async fn _main() -> miette::Result<()> {
 struct AppState {
     db: sqlx::Pool<sqlx::Postgres>,
     cookie_key: cja::server::cookies::CookieKey,
+
+    s3_config: S3Config,
+}
+
+#[derive(Clone, Debug)]
+struct S3Config {
+    region: String,
+    bucket_name: String,
+    endpoint_url: String,
+    access_key_id: String,
+    secret_access_key: String,
+}
+
+impl S3Config {
+    pub fn from_env() -> miette::Result<S3Config> {
+        Ok(S3Config {
+            region: std::env::var("AWS_S3_REGION").into_diagnostic()?,
+            bucket_name: std::env::var("AWS_S3_BUCKET").into_diagnostic()?,
+            endpoint_url: std::env::var("AWS_S3_ENDPOINT").into_diagnostic()?,
+            access_key_id: std::env::var("AWS_ACCESS_KEY_ID").into_diagnostic()?,
+            secret_access_key: std::env::var("AWS_SECRET_ACCESS_KEY").into_diagnostic()?,
+        })
+    }
 }
 
 impl cja::app_state::AppState for AppState {
@@ -70,9 +96,12 @@ impl AppState {
         let cookie_key =
             cja::server::cookies::CookieKey::from_env_or_generate().into_diagnostic()?;
 
+        let s3_config = S3Config::from_env()?;
+
         Ok(Self {
             db: pool,
             cookie_key,
+            s3_config,
         })
     }
 }
