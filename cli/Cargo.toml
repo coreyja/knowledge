@@ -9,3 +9,6 @@ edition = "2021"
 tokio = { workspace = true, features = ["full"] }
 db = { path = "../db" }
 color-eyre = { workspace = true }
+
+[lints]
+workspace = true
