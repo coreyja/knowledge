@@ -28,6 +28,7 @@ mod tests {
 
     mod test_db {
         use sqlx::{migrate::MigrateDatabase, Postgres, Row};
+        use url::Url;
 
         use super::*;
         struct TestPool {
@@ -50,12 +51,13 @@ mod tests {
         }
 
         async fn create_test_db_pool() -> color_eyre::Result<TestPool> {
-            let database_url = format!(
-                "postgres://localhost:5432/knowledge_test_{}",
-                uuid::Uuid::new_v4()
-            );
-            Postgres::create_database(&database_url).await?;
+            let original_database_url = std::env::var("DATABASE_URL").unwrap();
+            let mut db_url = Url::parse(&original_database_url).unwrap();
+            let database_name = format!("/knowledge_test_{}", uuid::Uuid::new_v4());
+            db_url.set_path(&database_name);
 
+            let database_url = db_url.to_string();
+            Postgres::create_database(&database_url).await?;
             std::env::set_var("DATABASE_URL", &database_url);
 
             let pool = setup_db_pool().await?;
