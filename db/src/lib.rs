@@ -21,3 +21,74 @@ pub async fn setup_db_pool() -> color_eyre::Result<PgPool> {
 
     Ok(pool)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod test_db {
+        use sqlx::{migrate::MigrateDatabase, Postgres, Row};
+
+        use super::*;
+        struct TestPool {
+            database_url: String,
+            pool: PgPool,
+        }
+
+        impl AsRef<PgPool> for TestPool {
+            fn as_ref(&self) -> &PgPool {
+                &self.pool
+            }
+        }
+
+        impl TestPool {
+            async fn teardown(self) -> color_eyre::Result<()> {
+                self.pool.close().await;
+                Postgres::drop_database(&self.database_url).await?;
+                Ok(())
+            }
+        }
+
+        async fn create_test_db_pool() -> color_eyre::Result<TestPool> {
+            let database_url = format!(
+                "postgres://localhost:5432/knowledge_test_{}",
+                uuid::Uuid::new_v4()
+            );
+            Postgres::create_database(&database_url).await?;
+
+            std::env::set_var("DATABASE_URL", &database_url);
+
+            let pool = setup_db_pool().await?;
+
+            Ok(TestPool { pool, database_url })
+        }
+
+        #[tokio::test]
+        async fn test_create_test_db_pool() {
+            let pool = create_test_db_pool().await.unwrap();
+
+            let result = sqlx::query("SELECT 1 + 1")
+                .fetch_one(pool.as_ref())
+                .await
+                .expect("Failed to execute query");
+
+            assert_eq!(2, result.get::<i32, _>(0));
+
+            let db_name_row = sqlx::query("SELECT current_database()")
+                .fetch_one(pool.as_ref())
+                .await
+                .expect("Failed to execute query");
+
+            let db_name: String = db_name_row.get(0);
+
+            assert!(db_name.contains("knowledge_test_"));
+
+            pool.teardown().await.unwrap();
+        }
+    }
+
+    #[tokio::test]
+    async fn setup_db_pool_doesnt_panic() {
+        let _ = setup_db_pool().await.unwrap();
+    }
+}
