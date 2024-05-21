@@ -7,3 +7,5 @@ color-eyre = "0.6.3"
 sqlx = { version = "0.7", default-features = false }
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1.40"
+url = "2.5.0"
+uuid = { version = "1.8.0", features = ["v4"] }
