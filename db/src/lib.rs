@@ -62,7 +62,7 @@ mod tests {
 
             let pool = setup_db_pool().await?;
 
-            Ok(TestPool { pool, database_url })
+            Ok(TestPool { database_url, pool })
         }
 
         #[tokio::test]
