@@ -11,13 +11,14 @@ pub async fn setup_db_pool() -> color_eyre::Result<PgPool> {
         .await?;
     let mut connection = pool.acquire().await?;
 
-    let lock = sqlx::postgres::PgAdvisoryLock::new("knowledge-db-migration-lock");
-    let mut lock = lock.acquire(&mut connection).await?;
+    // let lock = sqlx::postgres::PgAdvisoryLock::new("seif is running the show!");
+    // let mut lock = lock.acquire(&mut connection).await?;
 
-    sqlx::migrate!().run(lock.as_mut()).await?;
+    sqlx::migrate!().run(connection.as_mut()).await?;
+    // sqlx::migrate!().run(lock.as_mut()).await?;
 
-    lock.release_now().await?;
-    tracing::info!("Migration lock unlocked");
+    // lock.release_now().await?;
+    // tracing::info!("Migration lock unlocked");
 
     Ok(pool)
 }
