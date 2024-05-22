@@ -1,0 +1,54 @@
+name: Rust Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Clippy
+        run: cargo clippy --all-targets
+
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Test
+        run: cargo test --all-targets
+  cargo-deny:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install cargo-binstall
+        run: curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
+      - name: Install cargo-deny
+        run: cargo binstall --no-confirm cargo-deny
+      - name: Cargo Deny
+        run: cargo-deny check bans
