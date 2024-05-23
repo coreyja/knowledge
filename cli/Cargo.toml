@@ -9,6 +9,8 @@ edition = "2021"
 tokio = { workspace = true, features = ["full"] }
 db = { path = "../db" }
 color-eyre = { workspace = true }
+clap = { version = "4.1", features = ["derive"] }
+sqlx.workspace = true
 
 [lints]
 workspace = true
