@@ -1,28 +1,69 @@
+use db::PgPool;
 use tokio;
-use clap::{Parser, Arg};
-use sqlx::postgres::PgPoolOptions;
-pub use sqlx::PgPool;
+use clap::{Parser, Subcommand};
+use db::sqlx;
+use std::fs;
+use std::io::Write;
+use uuid::Uuid; // Ensure you have the `uuid` crate in your Cargo.toml
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
-struct LoginArgs {
-    #[arg(short, long)]
-    username: String
+struct KnowledgeArgs {
+    #[command(subcommand)]
+    command: Command,
+}
+
+#[derive(Subcommand)]
+enum Command {
+    Login,
+    Signup,
+    DisplayUsers,
 }
 
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
+    let args = KnowledgeArgs::parse();
     let db_pool = db::setup_db_pool().await?;
 
-    // let args = LoginArgs::parse();
-    // println!("Welcome {}!", args.username);
-    
-
-    display_menu(&db_pool).await?;
+    match args.command {
+        Command::Login => {
+            println!("Login not implemented yet")
+        },
+        Command::Signup => {
+            sign_up(&db_pool).await?;
+        },
+        Command::DisplayUsers => {
+            display_users(&db_pool).await?;
+        }
+    }
 
     Ok(())
 }
 
+async fn persist_auth_session(user_id: Uuid) -> color_eyre::Result<()> {
+    if fs::metadata("auth.txt").is_ok() {
+        return Err(color_eyre::eyre::eyre!("auth.txt already exists"));
+    }
+
+    let mut file = fs::File::create("auth.txt")?;
+    writeln!(file, "{}", user_id)?;
+
+    Ok(())
+}
+
+async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
+    let result = sqlx::query!(
+        "INSERT INTO Users (user_name) VALUES ($1) RETURNING user_id",
+        username
+    )
+    .fetch_one(pool)
+    .await?;
+
+    persist_auth_session(result.user_id).await?;
+
+    println!("User {} added successfully with ID {}!", username, result.user_id);
+    Ok(())
+}
 
 async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
     let users = db::get_users(pool).await?;
@@ -37,92 +78,12 @@ async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
     Ok(())
 }
 
-
-
-async fn display_menu(db_pool: &PgPool) -> color_eyre::Result<()> {
-    println!("Welcome to Knowledge!");
-    println!("--------");
-
-    loop {
-        println!("1. Login");
-        println!("2. Sign up");
-        println!("3. Exit");
-
-        println!("Enter your choice: ");
-        let mut choice_str = String::new();
-        std::io::stdin().read_line(&mut choice_str).expect("Failed to read line");
-        let choice: i32 = match choice_str.trim().parse() {
-            Ok(num) => num,
-            Err(_) => {
-                println!("Invalid choice. Please enter a number.");
-                continue;
-            }
-        };
-
-        match choice {
-            1 => {
-                let username = login(&db_pool).await?;
-                println!("Logged in as: {}", username);
-            },
-            2 => {
-                sign_up(&db_pool).await?;
-            },
-            3 => break,
-            _ => println!("Invalid choice. Please choose 1, 2, or 3."),
-        }
-    }
-
-    Ok(())
-}
-
-
-
-async fn login(db_pool: &PgPool) -> color_eyre::Result<String> {
-    println!("Enter a username ");
-    let mut username = String::new();
-    std::io::stdin().read_line(&mut username).expect("Failed to read line");
-    let username = username.trim().to_string();
-    // Add user to the database or verify existing user
-    db::add_user(db_pool, &username).await?;
-    println!("Welcome {}!", username);
-    Ok(username)
-}
-
-async fn sign_up(db_pool: &PgPool) -> color_eyre::Result<()> {
+async fn sign_up(pool: &PgPool) -> color_eyre::Result<()> {
     println!("Enter a username");
     let mut username = String::new();
     std::io::stdin().read_line(&mut username).expect("Failed to read line");
     let username = username.trim().to_string();
-    // Add new user to the database
-    db::add_user(db_pool, &username).await?;
+    add_user(pool, &username).await?;
     println!("Signed up as: {}", username);
-    Ok(())
-}
-
-pub async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
-    // Check if the user already exists
-    let user_exists = sqlx::query!(
-        "SELECT EXISTS(SELECT 1 FROM Users WHERE user_name = $1)",
-        username
-    )
-    .fetch_one(pool)
-    .await?
-    .exists
-    .unwrap_or(false);
-
-    if user_exists {
-        println!("User {} already exists.", username);
-        return Err(color_eyre::eyre::eyre!("User already exists"));
-    }
-
-    // Insert the new user
-    sqlx::query!(
-        "INSERT INTO Users (user_name) VALUES ($1)",
-        username
-    )
-    .execute(pool)
-    .await?;
-
-    println!("User {} added successfully.", username);
     Ok(())
 }

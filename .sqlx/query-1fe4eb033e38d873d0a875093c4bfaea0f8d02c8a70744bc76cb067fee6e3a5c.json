@@ -1,0 +1,26 @@
+{
+  "db_name": "PostgreSQL",
+  "query": " \n         SELECT user_id, user_name \n         FROM Users\n         ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "1fe4eb033e38d873d0a875093c4bfaea0f8d02c8a70744bc76cb067fee6e3a5c"
+}

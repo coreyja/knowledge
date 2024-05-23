@@ -1,6 +1,27 @@
 pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
 pub use sqlx::PgPool;
+use color_eyre::Result;
+
+
+#[derive(sqlx::FromRow)]
+pub struct User {
+    pub user_id: String,
+    pub user_name: String,
+}
+
+pub async fn get_users(pool: &PgPool) -> Result<Vec<User>> {
+    let users = sqlx::query_as!(
+        User,
+         " 
+         SELECT user_id, user_name 
+         FROM Users
+         ",
+    ).fetch_all(pool).await?;
+
+    Ok(users)
+}
+
 
 #[tracing::instrument(err)]
 pub async fn setup_db_pool() -> color_eyre::Result<PgPool> {
