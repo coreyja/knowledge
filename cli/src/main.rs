@@ -2,12 +2,13 @@
 async fn main() -> color_eyre::Result<()> {
     let _db_pool = db::setup_db_pool().await?;
 
-    display_menu().await?;
-    
+    display_menu();
+
     Ok(())
 }
 
-async fn display_menu() -> color_eyre::Result<()> {
+fn display_menu() -> color_eyre::Result<()> {
+
     println!("Welcome to Knowledge!");
     println!("--------");
 
@@ -42,11 +43,10 @@ async fn display_menu() -> color_eyre::Result<()> {
 }
 
 fn login() -> String {
-    println!("Enter a username");
+    println!("Enter a username ");
     let mut username = String::new();
     std::io::stdin().read_line(&mut username).expect("Failed to read line");
     let username = username.trim().to_string();
-
     println!("Welcome {}!", username);
     username
 }
@@ -56,6 +56,5 @@ fn sign_up() {
     let mut username = String::new();
     std::io::stdin().read_line(&mut username).expect("Failed to read line");
     let username = username.trim().to_string();
-
     println!("Signed up as: {}", username);
 }
