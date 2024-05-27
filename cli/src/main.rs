@@ -4,7 +4,7 @@ use clap::{Parser, Subcommand};
 use db::sqlx;
 use std::fs;
 use std::io::Write;
-use uuid::Uuid; // Ensure you have the `uuid` crate in your Cargo.toml
+use uuid::Uuid; 
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
