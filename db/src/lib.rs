@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 #[derive(sqlx::FromRow)]
 pub struct User {
-    pub user_id: String,
+    pub user_id: Uuid,
     pub user_name: String,
 }
 
