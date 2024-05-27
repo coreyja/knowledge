@@ -44,11 +44,11 @@ async fn main() -> color_eyre::Result<()> {
 }
 
 async fn persist_auth_session(user_id: Uuid) -> color_eyre::Result<()> {
-    if fs::metadata("auth.txt").is_ok() {
+    if std::path::Path::new("auth.txt").exists() {
         return Err(color_eyre::eyre::eyre!("auth.txt already exists"));
     }
 
-    let mut file = fs::File::create("auth.txt")?;
+    let mut file = fs::File::create_new("auth.txt")?;
     writeln!(file, "{}", user_id)?;
 
     Ok(())
