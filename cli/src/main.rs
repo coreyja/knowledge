@@ -16,7 +16,10 @@ struct KnowledgeArgs {
 #[derive(Subcommand)]
 enum Command {
     Login,
-    Signup,
+    Signup {
+        #[arg(short, long)]
+        username: Option<String>,
+    },
     DisplayUsers,
 }
 
@@ -29,8 +32,8 @@ async fn main() -> color_eyre::Result<()> {
         Command::Login => {
             println!("Login not implemented yet")
         },
-        Command::Signup => {
-            sign_up(&db_pool).await?;
+        Command::Signup { username } => {
+            sign_up(&db_pool, username).await?;
         },
         Command::DisplayUsers => {
             display_users(&db_pool).await?;
@@ -51,20 +54,6 @@ async fn persist_auth_session(user_id: Uuid) -> color_eyre::Result<()> {
     Ok(())
 }
 
-async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
-    let result = sqlx::query!(
-        "INSERT INTO Users (user_name) VALUES ($1) RETURNING user_id",
-        username
-    )
-    .fetch_one(pool)
-    .await?;
-
-    persist_auth_session(result.user_id).await?;
-
-    println!("User {} added successfully with ID {}!", username, result.user_id);
-    Ok(())
-}
-
 async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
     let users = db::get_users(pool).await?;
     if users.is_empty() {
@@ -78,12 +67,32 @@ async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
     Ok(())
 }
 
-async fn sign_up(pool: &PgPool) -> color_eyre::Result<()> {
-    println!("Enter a username");
-    let mut username = String::new();
-    std::io::stdin().read_line(&mut username).expect("Failed to read line");
-    let username = username.trim().to_string();
+async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Result<()> {
+    let username = match username_opt {
+        Some(name) => name,
+        None => {
+            println!("Enter a username:");
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input).expect("Failed to read line");
+            input.trim().to_string()
+        }
+    };
+
     add_user(pool, &username).await?;
     println!("Signed up as: {}", username);
+    Ok(())
+}
+
+async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
+    let result = sqlx::query!(
+        "INSERT INTO Users (user_name) VALUES ($1) RETURNING user_id",
+        username
+    )
+    .fetch_one(pool)
+    .await?;
+
+    persist_auth_session(result.user_id).await?;
+
+    println!("User {} added successfully with ID {}!", username, result.user_id);
     Ok(())
 }
