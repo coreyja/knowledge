@@ -4,7 +4,8 @@ use clap::{Parser, Subcommand};
 use db::sqlx;
 use std::fs;
 use std::io::Write;
-use uuid::Uuid; 
+use uuid::Uuid;
+use std::path::Path;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -43,9 +44,14 @@ async fn main() -> color_eyre::Result<()> {
     Ok(())
 }
 
-async fn persist_auth_session(user_id: Uuid) -> color_eyre::Result<()> {
-    if std::path::Path::new("auth.txt").exists() {
-        return Err(color_eyre::eyre::eyre!("auth.txt already exists"));
+async fn persist_auth_session(pool: &PgPool, user_id: Uuid) -> color_eyre::Result<()> {
+    if Path::new("auth.txt").exists() {
+        let username = db::get_username_by_id(pool, user_id).await?;
+
+        return Err(color_eyre::eyre::eyre!(
+            "auth.txt already exists. Currently logged in as: {} (ID: {})",
+            username, user_id
+        ));
     }
 
     let mut file = fs::File::create_new("auth.txt")?;
@@ -91,7 +97,7 @@ async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
     .fetch_one(pool)
     .await?;
 
-    persist_auth_session(result.user_id).await?;
+    persist_auth_session(pool, result.user_id).await?;
 
     println!("User {} added successfully with ID {}!", username, result.user_id);
     Ok(())

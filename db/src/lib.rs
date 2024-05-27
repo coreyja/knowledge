@@ -2,6 +2,7 @@ pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
 pub use sqlx::PgPool;
 use color_eyre::Result;
+use uuid::Uuid;
 
 
 #[derive(sqlx::FromRow)]
@@ -20,6 +21,17 @@ pub async fn get_users(pool: &PgPool) -> Result<Vec<User>> {
     ).fetch_all(pool).await?;
 
     Ok(users)
+}
+
+pub async fn get_username_by_id(pool: &PgPool, user_id: Uuid) -> color_eyre::Result<String> {
+    let record = sqlx::query!(
+        "SELECT user_name FROM Users WHERE user_id = $1",
+        user_id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(record.user_name)
 }
 
 
