@@ -11,6 +11,18 @@ pub struct User {
     pub user_name: String,
 }
 
+
+pub async fn create_user(pool: &PgPool, username: &str) -> color_eyre::Result<Uuid> {
+    let result = sqlx::query!(
+        "INSERT INTO Users (user_name) VALUES ($1) RETURNING user_id",
+        username
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(result.user_id)
+}
+
 pub async fn get_users(pool: &PgPool) -> Result<Vec<User>> {
     let users = sqlx::query_as!(
         User,
@@ -44,10 +56,9 @@ pub async fn setup_db_pool() -> color_eyre::Result<PgPool> {
         .await?;
     let mut connection = pool.acquire().await?;
 
-    let lock = sqlx::postgres::PgAdvisoryLock::new("running the show!");
+    let lock = sqlx::postgres::PgAdvisoryLock::new("knowledge-db-migration-lock");
     let mut lock = lock.acquire(&mut connection).await?;
 
-    // sqlx::migrate!().run(connection.as_mut()).await?;
     sqlx::migrate!().run(lock.as_mut()).await?;
 
     lock.release_now().await?;
