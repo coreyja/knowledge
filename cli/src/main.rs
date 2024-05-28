@@ -63,9 +63,13 @@ async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Res
         file.read_to_string(&mut contents)?;
         let user_id = Uuid::parse_str(contents.trim())?;
 
-        let user = db::get_username_by_id(pool, user_id).await?;
-        return Err(color_eyre::eyre::eyre!("You are signed up as {}", user)
-            .wrap_err("Signup attempt failed due to existing user session"));
+        match db::get_username_by_id(pool, user_id).await? {
+            Some(existing_username) => {
+                println!("User ID already registered with username: {existing_username}");
+                return Ok(());
+            },
+            None => println!("No existing user found with this ID, proceeding with signup."),
+        }
     }
 
     let username = if let Some(name) = username_opt {

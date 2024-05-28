@@ -12,10 +12,24 @@ pub struct User {
 }
 
 
-pub async fn create_user(pool: &PgPool, username: &str) -> color_eyre::Result<Uuid> {
+/// Creates a new user with the given username.
+///
+/// # Arguments
+///
+/// * `pool` - A reference to the `PostgreSQL` connection pool.
+/// * `username` - The username of the new user.
+///
+/// # Returns
+///
+/// Returns a `Result` which is either the UUID of the newly created user or an error.
+///
+/// # Panics
+///
+/// This function may panic if the SQL query fails to execute.
+pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<Uuid> {
     let result = sqlx::query!(
         "INSERT INTO Users (user_name) VALUES ($1) RETURNING user_id",
-        username
+        user_name
     )
     .fetch_one(pool)
     .await?;
@@ -35,15 +49,15 @@ pub async fn get_users(pool: &PgPool) -> Result<Vec<User>> {
     Ok(users)
 }
 
-pub async fn get_username_by_id(pool: &PgPool, user_id: Uuid) -> color_eyre::Result<String> {
+pub async fn get_username_by_id(pool: &PgPool, user_id: Uuid) -> color_eyre::Result<Option<String>> {
     let record = sqlx::query!(
         "SELECT user_name FROM Users WHERE user_id = $1",
         user_id
     )
-    .fetch_one(pool)
+    .fetch_optional(pool)
     .await?;
 
-    Ok(record.user_name)
+    Ok(record.map(|r| r.user_name))
 }
 
 
