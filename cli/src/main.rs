@@ -93,7 +93,7 @@ async fn check_status(pool: &PgPool) -> color_eyre::Result<()> {
 
         match db::get_username_by_id(pool, user_id).await? {
             Some(username) => println!("Logged in with Username: {username}, User ID: {user_id}"),
-            None => println!("No user found with User ID: {}", user_id),
+            None => println!("No user found with User ID: {user_id}"),
         }
     } else {
         println!("Not logged in.");
