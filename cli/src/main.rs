@@ -40,7 +40,7 @@ async fn main() -> color_eyre::Result<()> {
             display_users(&db_pool).await?;
         }
         Command::Status => {
-            check_status().await?;
+            check_status(&db_pool).await?;
         }
     }
 
@@ -60,20 +60,11 @@ async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
     Ok(())
 }
 
+
 async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Result<()> {
     if Path::new("auth.txt").exists() {
-        let mut file = fs::File::open("auth.txt")?;
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
-        let user_id = Uuid::parse_str(contents.trim())?;
-
-        match db::get_username_by_id(pool, user_id).await? {
-            Some(existing_username) => {
-                println!("User ID already registered with username: {existing_username}");
-                return Ok(());
-            }
-            None => println!("No existing user found with this ID, proceeding with signup."),
-        }
+        check_status(pool).await?;
+        return Ok(());
     }
 
     let username = if let Some(name) = username_opt {
@@ -92,25 +83,29 @@ async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Res
     Ok(())
 }
 
-async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
-    let user_id = db::create_user(pool, username).await?;
-    persist_auth_session(user_id)?;
-
-    println!("User {username} added successfully with ID {user_id}!");
-    Ok(())
-}
-
-async fn check_status() -> color_eyre::Result<()> {
+async fn check_status(pool: &PgPool) -> color_eyre::Result<()> {
     let user_path = Path::new("auth.txt");
     if user_path.exists() {
         let mut file = fs::File::open("auth.txt")?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
         let user_id = Uuid::parse_str(contents.trim())?;
-        println!("Logged in with User ID: {}", user_id);
+
+        match db::get_username_by_id(pool, user_id).await? {
+            Some(username) => println!("Logged in with Username: {username}, User ID: {user_id}"),
+            None => println!("No user found with User ID: {}", user_id),
+        }
     } else {
         println!("Not logged in.");
     }
+    Ok(())
+}
+
+async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
+    let user_id = db::create_user(pool, username).await?;
+    persist_auth_session(user_id)?;
+
+    println!("User {username} added successfully with ID {user_id}!");
     Ok(())
 }
 
