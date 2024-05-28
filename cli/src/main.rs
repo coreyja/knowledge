@@ -1,5 +1,4 @@
 use db::PgPool;
-use tokio;
 use clap::{Parser, Subcommand};
 use std::fs;
 use std::io::Write;
@@ -31,7 +30,7 @@ async fn main() -> color_eyre::Result<()> {
 
     match args.command {
         Command::Login => {
-            println!("Login not implemented yet")
+            println!("Login not implemented yet");
         },
         Command::Signup { username } => {
             sign_up(&db_pool, username).await?;
@@ -69,32 +68,31 @@ async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Res
             .wrap_err("Signup attempt failed due to existing user session"));
     }
 
-    let username = match username_opt {
-        Some(name) => name,
-        None => {
-            println!("Enter a username:");
-            let mut input = String::new();
-            std::io::stdin().read_line(&mut input).expect("Failed to read line");
-            input.trim().to_string()
-        }
+    let username = if let Some(name) = username_opt {
+        name
+    } else {
+        println!("Enter a username:");
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).expect("Failed to read line");
+        input.trim().to_string()
     };
 
     add_user(pool, &username).await?;
-    println!("Signed up as: {}", username);
+    println!("Signed up as: {username}");
     Ok(())
 }
 
 async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
     let user_id = db::create_user(pool, username).await?;
-    persist_auth_session(pool, user_id).await?;
+    persist_auth_session(user_id).await?;
 
-    println!("User {} added successfully with ID {}!", username, user_id);
+    println!("User {username} added successfully with ID {user_id}!");
     Ok(())
 }
 
-async fn persist_auth_session(pool: &PgPool, user_id: Uuid) -> color_eyre::Result<()> {
+async fn persist_auth_session(user_id: Uuid) -> color_eyre::Result<()> {
     let mut file = fs::File::create("auth.txt")?;
-    writeln!(file, "{}", user_id)?;
+    writeln!(file, "{user_id}")?;
 
     Ok(())
 }
