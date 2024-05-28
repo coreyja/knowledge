@@ -6,15 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sqlx = { workspace = true, features = [
-  "postgres",
-  "runtime-tokio-rustls",
-  "chrono",
-  "migrate",
-  "macros",
-  "uuid",
-] }
 color-eyre = { workspace = true }
+sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "chrono", "migrate", "macros", "uuid"] }
 tracing = { workspace = true }
 uuid = { workspace = true }
 
