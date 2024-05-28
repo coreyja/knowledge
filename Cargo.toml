@@ -13,3 +13,4 @@ uuid = { version = "1.8.0", features = ["v4"] }
 [workspace.lints.clippy]
 pedantic = "deny"
 missing_errors_doc = "allow"
+missing_panics_doc = "allow"

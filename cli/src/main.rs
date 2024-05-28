@@ -1,10 +1,10 @@
-use db::PgPool;
 use clap::{Parser, Subcommand};
+use db::PgPool;
 use std::fs;
-use std::io::Write;
-use uuid::Uuid;
-use std::path::Path;
 use std::io::Read;
+use std::io::Write;
+use std::path::Path;
+use uuid::Uuid;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -31,10 +31,10 @@ async fn main() -> color_eyre::Result<()> {
     match args.command {
         Command::Login => {
             println!("Login not implemented yet");
-        },
+        }
         Command::Signup { username } => {
             sign_up(&db_pool, username).await?;
-        },
+        }
         Command::DisplayUsers => {
             display_users(&db_pool).await?;
         }
@@ -67,7 +67,7 @@ async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Res
             Some(existing_username) => {
                 println!("User ID already registered with username: {existing_username}");
                 return Ok(());
-            },
+            }
             None => println!("No existing user found with this ID, proceeding with signup."),
         }
     }
@@ -77,7 +77,9 @@ async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Res
     } else {
         println!("Enter a username:");
         let mut input = String::new();
-        std::io::stdin().read_line(&mut input).expect("Failed to read line");
+        std::io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
         input.trim().to_string()
     };
 
@@ -88,13 +90,13 @@ async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Res
 
 async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
     let user_id = db::create_user(pool, username).await?;
-    persist_auth_session(user_id).await?;
+    persist_auth_session(user_id)?;
 
     println!("User {username} added successfully with ID {user_id}!");
     Ok(())
 }
 
-async fn persist_auth_session(user_id: Uuid) -> color_eyre::Result<()> {
+fn persist_auth_session(user_id: Uuid) -> color_eyre::Result<()> {
     let mut file = fs::File::create("auth.txt")?;
     writeln!(file, "{user_id}")?;
 
