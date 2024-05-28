@@ -21,6 +21,7 @@ enum Command {
         username: Option<String>,
     },
     DisplayUsers,
+    Status,
 }
 
 #[tokio::main]
@@ -37,6 +38,9 @@ async fn main() -> color_eyre::Result<()> {
         }
         Command::DisplayUsers => {
             display_users(&db_pool).await?;
+        }
+        Command::Status => {
+            check_status().await?;
         }
     }
 
@@ -93,6 +97,20 @@ async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
     persist_auth_session(user_id)?;
 
     println!("User {username} added successfully with ID {user_id}!");
+    Ok(())
+}
+
+async fn check_status() -> color_eyre::Result<()> {
+    let user_path = Path::new("auth.txt");
+    if user_path.exists() {
+        let mut file = fs::File::open("auth.txt")?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
+        let user_id = Uuid::parse_str(contents.trim())?;
+        println!("Logged in with User ID: {}", user_id);
+    } else {
+        println!("Not logged in.");
+    }
     Ok(())
 }
 
