@@ -60,7 +60,6 @@ async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
     Ok(())
 }
 
-
 async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Result<()> {
     if Path::new("auth.txt").exists() {
         check_status(pool).await?;

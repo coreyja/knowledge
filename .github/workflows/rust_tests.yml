@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
-      - name: Clippy
+      - name: Format
         run: cargo fmt --all --check
 
   clippy:
