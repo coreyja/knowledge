@@ -9,6 +9,9 @@ use uuid::Uuid;
 mod add_url;  
 use add_url::add_url;  
 
+mod check_auth_status;
+use check_auth_status::check_auth_status;
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct KnowledgeArgs {
@@ -47,7 +50,7 @@ async fn main() -> color_eyre::Result<()> {
             display_users(&db_pool).await?;
         }
         Command::Status => {
-            check_status(&db_pool).await?;
+            check_auth_status(&db_pool).await?;
         }
         Command::AddUrl { url } => { 
             add_url(&db_pool, &url).await?;
@@ -73,7 +76,7 @@ async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
 
 async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Result<()> {
     if Path::new("auth.txt").exists() {
-        check_status(pool).await?;
+        check_auth_status(pool).await?;
         return Ok(());
     }
 
@@ -90,24 +93,6 @@ async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Res
 
     add_user(pool, &username).await?;
     println!("Signed up as: {username}");
-    Ok(())
-}
-
-async fn check_status(pool: &PgPool) -> color_eyre::Result<()> {
-    let user_path = Path::new("auth.txt");
-    if user_path.exists() {
-        let mut file = fs::File::open("auth.txt")?;
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
-        let user_id = Uuid::parse_str(contents.trim())?;
-
-        match db::get_username_by_id(pool, user_id).await? {
-            Some(username) => println!("Logged in with Username: {username}, User ID: {user_id}"),
-            None => println!("file empty"),
-        }
-    } else {
-        println!("Not logged in.");
-    }
     Ok(())
 }
 
