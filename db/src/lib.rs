@@ -1,5 +1,6 @@
 pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
+use sqlx::Row;
 pub use sqlx::PgPool;
 use color_eyre::Result;
 use uuid::Uuid;
@@ -11,21 +12,16 @@ pub struct User {
     pub user_name: String,
 }
 
+#[derive(sqlx::FromRow)]
+struct UrlRecord {
+    url_id: Option<Uuid>,
+}
 
-/// Creates a new user with the given username.
-///
-/// # Arguments
-///
-/// * `pool` - A reference to the `PostgreSQL` connection pool.
-/// * `username` - The username of the new user.
-///
-/// # Returns
-///
-/// Returns a `Result` which is either the UUID of the newly created user or an error.
-///
-/// # Panics
-///
-/// This function may panic if the SQL query fails to execute.
+#[derive(sqlx::FromRow)]
+struct ExistRecord {
+    exists: Option<bool>,
+}
+
 pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<Uuid> {
     let result = sqlx::query!(
         "INSERT INTO Users (user_name) VALUES ($1) RETURNING user_id",
@@ -37,7 +33,23 @@ pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<U
     Ok(result.user_id)
 }
 
-pub async fn add_url(pool: &PgPool, url: &str) -> color_eyre::Result<String> {
+pub async fn add_url(pool: &PgPool, url: &str, allow_existing: &bool) -> color_eyre::Result<String> {
+    let exist_record = sqlx::query_as!(
+        ExistRecord,
+        "SELECT EXISTS(SELECT 1 FROM Page WHERE url = $1) as exists",
+        url
+    )
+    .fetch_one(*&pool)
+    .await?;
+
+    if let Some(true) = exist_record.exists {
+        if *allow_existing {
+            return Ok("URL already exists and re-adding is allowed.".to_string());
+        } else {
+            return Err(color_eyre::eyre::eyre!("URL already exists and re-adding is not allowed."));
+        }
+    }
+    
     let result = sqlx::query!(
         "INSERT INTO Page (url) VALUES ($1) RETURNING url",
         url

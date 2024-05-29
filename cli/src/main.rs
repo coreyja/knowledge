@@ -31,6 +31,8 @@ enum Command {
     AddUrl { 
         #[arg(short, long)]
         url: String,
+        #[arg(short, long)]
+        allow_existing: bool,
     },
 }
 
@@ -52,8 +54,8 @@ async fn main() -> color_eyre::Result<()> {
         Command::Status => {
             check_auth_status(&db_pool).await?;
         }
-        Command::AddUrl { url } => { 
-            add_url(&db_pool, &url).await?;
+        Command::AddUrl { url, allow_existing } => { 
+            add_url(&db_pool, &url, allow_existing).await?;
         }
     }
 
