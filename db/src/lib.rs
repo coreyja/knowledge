@@ -37,6 +37,17 @@ pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<U
     Ok(result.user_id)
 }
 
+pub async fn add_url(pool: &PgPool, url: &str) -> color_eyre::Result<String> {
+    let result = sqlx::query!(
+        "INSERT INTO Page (url) VALUES ($1) RETURNING url",
+        url
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(result.url)
+}
+
 pub async fn get_users(pool: &PgPool) -> Result<Vec<User>> {
     let users = sqlx::query_as!(
         User,

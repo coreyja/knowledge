@@ -6,6 +6,9 @@ use std::io::Write;
 use std::path::Path;
 use uuid::Uuid;
 
+mod add_url;  
+use add_url::add_url;  
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct KnowledgeArgs {
@@ -22,6 +25,10 @@ enum Command {
     },
     DisplayUsers,
     Status,
+    AddUrl { 
+        #[arg(short, long)]
+        url: String,
+    },
 }
 
 #[tokio::main]
@@ -41,6 +48,9 @@ async fn main() -> color_eyre::Result<()> {
         }
         Command::Status => {
             check_status(&db_pool).await?;
+        }
+        Command::AddUrl { url } => { 
+            add_url(&db_pool, &url).await?;
         }
     }
 
