@@ -109,7 +109,7 @@ deny = [
   #"Nokia",
 ]
 # Lint level for licenses considered copyleft
-copyleft = "warn"
+copyleft = "deny"
 # Blanket approval or denial for OSI-approved or FSF Free/Libre licenses
 # * both - The license will be approved if it is both OSI-approved *AND* FSF
 # * either - The license will be approved if it is either OSI-approved *OR* FSF
@@ -133,6 +133,7 @@ exceptions = [
   # Each entry is the crate and version constraint, and its specific allow
   # list
   #{ allow = ["Zlib"], name = "adler32", version = "*" },
+  { allow = ["MPL-2.0"], name = "webpki-roots", version = "*" },
 ]
 
 # Some crates don't have (easily) machine readable licensing information,
@@ -183,11 +184,11 @@ wildcards = "allow"
 # * all - Both lowest-version and simplest-path are used
 highlight = "all"
 # The default lint level for `default` features for crates that are members of
-# the workspace that is being checked. This can be overriden by allowing/denying
+# the workspace that is being checked. This can be overridden by allowing/denying
 # `default` on a crate-by-crate basis if desired.
 workspace-default-features = "allow"
 # The default lint level for `default` features for external crates that are not
-# members of the workspace. This can be overriden by allowing/denying `default`
+# members of the workspace. This can be overridden by allowing/denying `default`
 # on a crate-by-crate basis if desired.
 external-default-features = "allow"
 # List of crates that are allowed. Use with care!
