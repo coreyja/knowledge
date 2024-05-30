@@ -39,9 +39,10 @@ pub async fn add_url(pool: &PgPool, url: &str, allow_existing: &bool) -> color_e
         "SELECT EXISTS(SELECT 1 FROM Page WHERE url = $1) as exists",
         url
     )
-    .fetch_one(*&pool)
+    .fetch_one(pool)
     .await?;
 
+    // exist_record might be true or false
     if let Some(true) = exist_record.exists {
         if *allow_existing {
             return Ok("URL already exists and re-adding is allowed.".to_string());
