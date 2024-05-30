@@ -1,16 +1,14 @@
+use color_eyre::Result;
 pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
 pub use sqlx::PgPool;
-use color_eyre::Result;
 use uuid::Uuid;
-
 
 #[derive(sqlx::FromRow)]
 pub struct User {
     pub user_id: Uuid,
     pub user_name: String,
 }
-
 
 /// Creates a new user with the given username.
 ///
@@ -40,26 +38,27 @@ pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<U
 pub async fn get_users(pool: &PgPool) -> Result<Vec<User>> {
     let users = sqlx::query_as!(
         User,
-         " 
+        " 
          SELECT user_id, user_name 
          FROM Users
          ",
-    ).fetch_all(pool).await?;
+    )
+    .fetch_all(pool)
+    .await?;
 
     Ok(users)
 }
 
-pub async fn get_username_by_id(pool: &PgPool, user_id: Uuid) -> color_eyre::Result<Option<String>> {
-    let record = sqlx::query!(
-        "SELECT user_name FROM Users WHERE user_id = $1",
-        user_id
-    )
-    .fetch_optional(pool)
-    .await?;
+pub async fn get_username_by_id(
+    pool: &PgPool,
+    user_id: Uuid,
+) -> color_eyre::Result<Option<String>> {
+    let record = sqlx::query!("SELECT user_name FROM Users WHERE user_id = $1", user_id)
+        .fetch_optional(pool)
+        .await?;
 
     Ok(record.map(|r| r.user_name))
 }
-
 
 #[tracing::instrument(err)]
 pub async fn setup_db_pool() -> color_eyre::Result<PgPool> {
