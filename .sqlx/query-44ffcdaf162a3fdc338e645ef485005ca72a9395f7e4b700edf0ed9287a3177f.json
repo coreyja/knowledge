@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO Pages (page_id, user_id, url) VALUES ($1, $2, $3) ON CONFLICT (user_id, url) DO NOTHING RETURNING *",
+  "query": "INSERT INTO Pages (page_id, user_id, url) VALUES ($1, $2, $3)\n         ON CONFLICT (user_id, url) DO UPDATE SET url = EXCLUDED.url\n         RETURNING *",
   "describe": {
     "columns": [
       {
@@ -32,5 +32,5 @@
       false
     ]
   },
-  "hash": "4b73cdbd50a3dc288bcf668ca1dc80382a8a6ff48852e2999bbeb687f4f64993"
+  "hash": "44ffcdaf162a3fdc338e645ef485005ca72a9395f7e4b700edf0ed9287a3177f"
 }

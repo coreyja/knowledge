@@ -44,7 +44,9 @@ pub async fn add_url(
 
     let upsert_result = sqlx::query_as!(
         Page,
-        "INSERT INTO Pages (page_id, user_id, url) VALUES ($1, $2, $3) ON CONFLICT (user_id, url) DO NOTHING RETURNING *",
+        "INSERT INTO Pages (page_id, user_id, url) VALUES ($1, $2, $3)
+         ON CONFLICT (user_id, url) DO UPDATE SET url = EXCLUDED.url
+         RETURNING *",
         new_page_id,
         user_id,
         url
@@ -53,15 +55,13 @@ pub async fn add_url(
     .await?;
 
     if upsert_result.page_id == new_page_id {
-        println!("URL added successfully.");
+        println!("URL '{}' added successfully.", upsert_result.url);
         Ok(upsert_result)
     } else if *allow_existing {
-        println!("URL exists but re-adding is allowed.");
+        println!("URL '{}' exists but re-adding is allowed.", upsert_result.url);
         Ok(upsert_result)
     } else {
-        Err(color_eyre::eyre::eyre!(
-            "URL already exists and re-adding is not allowed."
-        ))
+        Err(color_eyre::eyre::eyre!("URL '{}' already exists and re-adding is not allowed.", upsert_result.url))
     }
 }
 
