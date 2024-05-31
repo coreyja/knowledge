@@ -5,6 +5,7 @@ use uuid::Uuid;
 
 use crate::check_auth_status;
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub enum AddUrlOutcome {
     Created(String),
