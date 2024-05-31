@@ -10,7 +10,6 @@ pub struct User {
     pub user_name: String,
 }
 
-
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
     pub page_id: Uuid,
