@@ -2,7 +2,6 @@ use color_eyre::Result;
 pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
 pub use sqlx::PgPool;
-use sqlx::Row;
 use uuid::Uuid;
 
 #[derive(sqlx::FromRow)]
@@ -11,10 +10,6 @@ pub struct User {
     pub user_name: String,
 }
 
-#[derive(sqlx::FromRow)]
-struct ExistRecord {
-    exists: Option<bool>,
-}
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
