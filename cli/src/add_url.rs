@@ -25,6 +25,6 @@ pub async fn add_url(
             Ok(AddUrlOutcome::Existing(page.url.to_string()))
         }
         Ok(page) => Ok(AddUrlOutcome::Created(page.url.to_string())),
-        Err(e) => Err(e.into()),
+        Err(e) => Err(e),
     }
 }
