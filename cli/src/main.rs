@@ -54,15 +54,21 @@ async fn main() -> color_eyre::Result<()> {
         Command::Status => {
             check_auth_status(&db_pool).await?;
         }
-        Command::AddUrl {
-            url,
-            allow_existing,
-        } => {
-            add_url(&db_pool, &url, allow_existing).await?;
+        Command::AddUrl { url, allow_existing } => {
+            let user_id = get_user_id_from_session()?;
+            add_url(&db_pool, &url, user_id, allow_existing).await?;
         }
     }
 
     Ok(())
+}
+
+fn get_user_id_from_session() -> color_eyre::Result<Uuid> {
+    let mut file = fs::File::open("auth.txt")?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+    let user_id = Uuid::parse_str(contents.trim())?;
+    Ok(user_id)
 }
 
 async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {

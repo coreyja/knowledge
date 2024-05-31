@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO Page (url) VALUES ($1) RETURNING url",
+  "query": "INSERT INTO Page (url, user_id) VALUES ($1, $2) RETURNING url",
   "describe": {
     "columns": [
       {
@@ -11,12 +11,13 @@
     ],
     "parameters": {
       "Left": [
-        "Varchar"
+        "Varchar",
+        "Uuid"
       ]
     },
     "nullable": [
       false
     ]
   },
-  "hash": "25c9e539b0b1f641c07339ace69f650a44b1f4c9d94c0c434e58e4f12df18ee0"
+  "hash": "b8948cadbd84058d3c986fb04897c5663853d797a1ccbbbb5b5bfd3bb3ea215a"
 }

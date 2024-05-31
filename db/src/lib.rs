@@ -12,11 +12,6 @@ pub struct User {
 }
 
 #[derive(sqlx::FromRow)]
-struct UrlRecord {
-    url_id: Option<Uuid>,
-}
-
-#[derive(sqlx::FromRow)]
 struct ExistRecord {
     exists: Option<bool>,
 }
@@ -32,11 +27,7 @@ pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<U
     Ok(result.user_id)
 }
 
-pub async fn add_url(
-    pool: &PgPool,
-    url: &str,
-    allow_existing: &bool,
-) -> color_eyre::Result<String> {
+pub async fn add_url(pool: &PgPool, url: &str, user_id: Uuid, allow_existing: &bool) -> color_eyre::Result<String> {
     let exist_record = sqlx::query_as!(
         ExistRecord,
         "SELECT EXISTS(SELECT 1 FROM Page WHERE url = $1) as exists",
@@ -57,9 +48,12 @@ pub async fn add_url(
         }
     }
 
-    let result = sqlx::query!("INSERT INTO Page (url) VALUES ($1) RETURNING url", url)
-        .fetch_one(pool)
-        .await?;
+    let result = sqlx::query!(
+        "INSERT INTO Page (url, user_id) VALUES ($1, $2) RETURNING url",
+        url, user_id
+    )
+    .fetch_one(pool)
+    .await?;
 
     Ok(result.url)
 }

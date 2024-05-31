@@ -1,13 +1,14 @@
 // File: add_url.rs
 use color_eyre::Result;
 use db::PgPool;
+use uuid::Uuid;
 
 use crate::check_auth_status;
 
-pub async fn add_url(pool: &PgPool, url: &str, allow_existing: bool) -> Result<()> {
+pub async fn add_url(pool: &PgPool, url: &str, user_id: Uuid, allow_existing: bool) -> Result<()> {
     check_auth_status(pool).await?;
 
-    let result = db::add_url(pool, url, &allow_existing).await;
+    let result = db::add_url(pool, url, user_id, &allow_existing).await;
     match result {
         Ok(message) if message.contains("re-adding is allowed") => println!("{message}"),
         Ok(message) => println!("URL added successfully with ID: {message}"),
