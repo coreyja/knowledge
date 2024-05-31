@@ -18,6 +18,7 @@ struct ExistRecord {
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
+    pub page_id: Uuid,
     pub user_id: Uuid,
     pub url: String,
 }
@@ -39,40 +40,27 @@ pub async fn add_url(
     user_id: Uuid,
     allow_existing: &bool,
 ) -> color_eyre::Result<Page> {
-    let exist_record = sqlx::query_as!(
-        ExistRecord,
-        "SELECT EXISTS(SELECT 1 FROM Pages WHERE url = $1) as exists",
+    let new_page_id = Uuid::new_v4();
+
+    let upsert_result = sqlx::query_as!(
+        Page,
+        "INSERT INTO Pages (page_id, user_id, url) VALUES ($1, $2, $3) ON CONFLICT (user_id, url) DO NOTHING RETURNING *",
+        new_page_id,
+        user_id,
         url
     )
     .fetch_one(pool)
     .await?;
 
-    if let Some(true) = exist_record.exists {
-        if *allow_existing {
-            let existing_page =
-                sqlx::query_as!(Page, "SELECT user_id, url FROM Pages WHERE url = $1", url)
-                    .fetch_one(pool)
-                    .await?;
-            
-            println!("URL exists but re-adding is allowed");
-            return Ok(existing_page);
-        } else {
-            return Err(color_eyre::eyre::eyre!(
-                "URL already exists and re-adding is not allowed."
-            ));
-        }
+    if upsert_result.page_id == new_page_id {
+        println!("URL added successfully.");
+        Ok(upsert_result)
+    } else if *allow_existing {
+        println!("URL exists but re-adding is allowed.");
+        Ok(upsert_result)
+    } else {
+        Err(color_eyre::eyre::eyre!("URL already exists and re-adding is not allowed."))
     }
-
-    let new_page = sqlx::query_as!(
-        Page,
-        "INSERT INTO Pages (url, user_id) VALUES ($1, $2) RETURNING user_id, url",
-        url,
-        user_id
-    )
-    .fetch_one(pool)
-    .await?;
-
-    Ok(new_page)
 }
 
 pub async fn get_users(pool: &PgPool) -> Result<Vec<User>> {
