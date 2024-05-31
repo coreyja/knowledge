@@ -41,15 +41,14 @@ pub async fn add_url(pool: &PgPool, url: &str, allow_existing: &bool) -> color_e
     .fetch_one(pool)
     .await?;
 
-    // exist_record might be true or false
     if let Some(true) = exist_record.exists {
         if *allow_existing {
             return Ok(format!("URL already exists and re-adding is allowed: {url}"));
         } else {
             return Err(color_eyre::eyre::eyre!("URL already exists and re-adding is not allowed."));
         }
-    } 
-    
+    }
+
     let result = sqlx::query!(
         "INSERT INTO Page (url) VALUES ($1) RETURNING url",
         url
