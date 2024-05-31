@@ -10,9 +10,9 @@ pub async fn add_url(pool: &PgPool, url: &str, user_id: Uuid, allow_existing: bo
 
     let result = db::add_url(pool, url, user_id, &allow_existing).await;
     match result {
-        Ok(message) if message.contains("re-adding is allowed") => println!("{message}"),
-        Ok(message) => println!("URL added successfully with ID: {message}"),
-        Err(e) => println!("Error: {e}"),
+        Ok(page) if page.url.contains("re-adding is allowed") => println!("{:?}", page),
+        Ok(page) => println!("URL added successfully with ID: {:?}", page),
+        Err(e) => println!("Error: {:?}", e),
     }
     Ok(())
 }

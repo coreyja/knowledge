@@ -3,5 +3,6 @@
     "rust-analyzer.rustfmt.enableRangeFormatting": false,
     "[rust]": {
         "editor.defaultFormatter": "matklad.rust-analyzer"
-    }
+    },
+    "files.insertFinalNewline": true
 }
