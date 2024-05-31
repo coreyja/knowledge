@@ -54,7 +54,10 @@ async fn main() -> color_eyre::Result<()> {
         Command::Status => {
             check_auth_status(&db_pool).await?;
         }
-        Command::AddUrl { url, allow_existing } => {
+        Command::AddUrl {
+            url,
+            allow_existing,
+        } => {
             let user_id = get_user_id_from_session()?;
             add_url(&db_pool, &url, user_id, allow_existing).await?;
         }
