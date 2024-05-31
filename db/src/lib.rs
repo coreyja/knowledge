@@ -59,7 +59,9 @@ pub async fn add_url(
         println!("URL exists but re-adding is allowed.");
         Ok(upsert_result)
     } else {
-        Err(color_eyre::eyre::eyre!("URL already exists and re-adding is not allowed."))
+        Err(color_eyre::eyre::eyre!(
+            "URL already exists and re-adding is not allowed."
+        ))
     }
 }
 
