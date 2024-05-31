@@ -58,10 +58,16 @@ pub async fn add_url(
         println!("URL '{}' added successfully.", upsert_result.url);
         Ok(upsert_result)
     } else if *allow_existing {
-        println!("URL '{}' exists but re-adding is allowed.", upsert_result.url);
+        println!(
+            "URL '{}' exists but re-adding is allowed.",
+            upsert_result.url
+        );
         Ok(upsert_result)
     } else {
-        Err(color_eyre::eyre::eyre!("URL '{}' already exists and re-adding is not allowed.", upsert_result.url))
+        Err(color_eyre::eyre::eyre!(
+            "URL '{}' already exists and re-adding is not allowed.",
+            upsert_result.url
+        ))
     }
 }
 
