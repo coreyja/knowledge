@@ -1,8 +1,8 @@
 use color_eyre::Result;
 pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
-use sqlx::Row;
 pub use sqlx::PgPool;
+use sqlx::Row;
 use uuid::Uuid;
 
 #[derive(sqlx::FromRow)]
@@ -32,7 +32,11 @@ pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<U
     Ok(result.user_id)
 }
 
-pub async fn add_url(pool: &PgPool, url: &str, allow_existing: &bool) -> color_eyre::Result<String> {
+pub async fn add_url(
+    pool: &PgPool,
+    url: &str,
+    allow_existing: &bool,
+) -> color_eyre::Result<String> {
     let exist_record = sqlx::query_as!(
         ExistRecord,
         "SELECT EXISTS(SELECT 1 FROM Page WHERE url = $1) as exists",
@@ -43,18 +47,19 @@ pub async fn add_url(pool: &PgPool, url: &str, allow_existing: &bool) -> color_e
 
     if let Some(true) = exist_record.exists {
         if *allow_existing {
-            return Ok(format!("URL already exists and re-adding is allowed: {url}"));
+            return Ok(format!(
+                "URL already exists and re-adding is allowed: {url}"
+            ));
         } else {
-            return Err(color_eyre::eyre::eyre!("URL already exists and re-adding is not allowed."));
+            return Err(color_eyre::eyre::eyre!(
+                "URL already exists and re-adding is not allowed."
+            ));
         }
     }
 
-    let result = sqlx::query!(
-        "INSERT INTO Page (url) VALUES ($1) RETURNING url",
-        url
-    )
-    .fetch_one(pool)
-    .await?;
+    let result = sqlx::query!("INSERT INTO Page (url) VALUES ($1) RETURNING url", url)
+        .fetch_one(pool)
+        .await?;
 
     Ok(result.url)
 }

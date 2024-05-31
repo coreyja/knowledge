@@ -1,11 +1,10 @@
 // File: add_url.rs
-use db::PgPool;
 use color_eyre::Result;
+use db::PgPool;
 
 use crate::check_auth_status;
 
 pub async fn add_url(pool: &PgPool, url: &str, allow_existing: bool) -> Result<()> {
-
     check_auth_status(pool).await?;
 
     let result = db::add_url(pool, url, &allow_existing).await;

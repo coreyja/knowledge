@@ -1,0 +1,7 @@
+{
+    "editor.formatOnSave": true,
+    "rust-analyzer.rustfmt.enableRangeFormatting": false,
+    "[rust]": {
+        "editor.defaultFormatter": "matklad.rust-analyzer"
+    }
+}

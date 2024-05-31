@@ -6,8 +6,8 @@ use std::io::Write;
 use std::path::Path;
 use uuid::Uuid;
 
-mod add_url;  
-use add_url::add_url;  
+mod add_url;
+use add_url::add_url;
 
 mod check_auth_status;
 use check_auth_status::check_auth_status;
@@ -28,7 +28,7 @@ enum Command {
     },
     DisplayUsers,
     Status,
-    AddUrl { 
+    AddUrl {
         #[arg(short, long)]
         url: String,
         #[arg(short, long)]
@@ -54,7 +54,10 @@ async fn main() -> color_eyre::Result<()> {
         Command::Status => {
             check_auth_status(&db_pool).await?;
         }
-        Command::AddUrl { url, allow_existing } => { 
+        Command::AddUrl {
+            url,
+            allow_existing,
+        } => {
             add_url(&db_pool, &url, allow_existing).await?;
         }
     }
