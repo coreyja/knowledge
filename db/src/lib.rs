@@ -17,6 +17,13 @@ pub struct Page {
     pub url: String,
 }
 
+#[allow(clippy::module_name_repetitions)]
+#[derive(Debug)]
+pub enum AddUrlOutcome {
+    Created(Page),
+    Existing(Page),
+}
+
 pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<Uuid> {
     let result = sqlx::query!(
         "INSERT INTO Users (user_name) VALUES ($1) RETURNING user_id",

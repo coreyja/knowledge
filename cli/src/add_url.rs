@@ -1,16 +1,9 @@
 // File: add_url.rs
 use color_eyre::Result;
-use db::PgPool;
+use db::{AddUrlOutcome, PgPool};
 use uuid::Uuid;
 
 use crate::check_auth_status;
-
-#[allow(clippy::module_name_repetitions)]
-#[derive(Debug)]
-pub enum AddUrlOutcome {
-    Created(String),
-    Existing(String),
-}
 
 pub async fn add_url(
     pool: &PgPool,
@@ -22,10 +15,8 @@ pub async fn add_url(
 
     let result = db::add_url(pool, url, user_id, &allow_existing).await;
     match result {
-        Ok(page) if page.url.contains("re-adding is allowed") => {
-            Ok(AddUrlOutcome::Existing(page.url.to_string()))
-        }
-        Ok(page) => Ok(AddUrlOutcome::Created(page.url.to_string())),
+        Ok(page) if page.url.contains("re-adding is allowed") => Ok(AddUrlOutcome::Existing(page)),
+        Ok(page) => Ok(AddUrlOutcome::Created(page)),
         Err(e) => Err(e),
     }
 }
