@@ -1,7 +1,8 @@
-use db::PgPool;
+use color_eyre::Result;
+use db::{user::get_users, PgPool};
 
-pub async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
-    let users = db::get_users(pool).await?;
+pub async fn display_users(pool: &PgPool) -> Result<()> {
+    let users = get_users(pool).await?;
     if users.is_empty() {
         println!("Nothing to display");
     } else {
