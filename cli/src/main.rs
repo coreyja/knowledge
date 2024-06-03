@@ -1,6 +1,5 @@
 use clap::{Parser, Subcommand};
 use db::PgPool;
-use std::path::Path;
 
 mod add_url;
 use add_url::add_url;
@@ -8,7 +7,9 @@ use add_url::add_url;
 mod auth;
 use auth::check_auth_status;
 use auth::get_user_id_from_session;
-use auth::persist_auth_session;
+
+mod sign_up;
+use sign_up::sign_up;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -74,35 +75,5 @@ async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
         }
     }
 
-    Ok(())
-}
-
-async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Result<()> {
-    if Path::new("auth.txt").exists() {
-        check_auth_status(pool).await?;
-        return Ok(());
-    }
-
-    let username = if let Some(name) = username_opt {
-        name
-    } else {
-        println!("Enter a username:");
-        let mut input = String::new();
-        std::io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read line");
-        input.trim().to_string()
-    };
-
-    add_user(pool, &username).await?;
-    println!("Signed up as: {username}");
-    Ok(())
-}
-
-async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
-    let user_id = db::create_user(pool, username).await?;
-    persist_auth_session(user_id)?;
-
-    println!("User {username} added successfully with ID {user_id}!");
     Ok(())
 }
