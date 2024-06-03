@@ -1,7 +1,6 @@
 use clap::{Parser, Subcommand};
 use db::PgPool;
 use std::fs;
-use std::io::Read;
 use std::io::Write;
 use std::path::Path;
 use uuid::Uuid;
@@ -11,6 +10,9 @@ use add_url::add_url;
 
 mod check_auth_status;
 use check_auth_status::check_auth_status;
+
+mod get_user_id_from_session;
+use get_user_id_from_session::get_user_id_from_session;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -64,14 +66,6 @@ async fn main() -> color_eyre::Result<()> {
     }
 
     Ok(())
-}
-
-fn get_user_id_from_session() -> color_eyre::Result<Uuid> {
-    let mut file = fs::File::open("auth.txt")?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-    let user_id = Uuid::parse_str(contents.trim())?;
-    Ok(user_id)
 }
 
 async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
