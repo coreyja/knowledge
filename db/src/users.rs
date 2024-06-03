@@ -19,7 +19,7 @@ pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<U
     Ok(result.user_id)
 }
 
-pub async fn get_users(pool: &PgPool) -> Result<Vec<User>> {
+pub async fn get_user(pool: &PgPool) -> Result<Vec<User>> {
     let users = sqlx::query_as!(User, "SELECT user_id, user_name FROM Users")
         .fetch_all(pool)
         .await?;
