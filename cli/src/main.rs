@@ -1,9 +1,6 @@
 use clap::{Parser, Subcommand};
 use db::PgPool;
-use std::fs;
-use std::io::Write;
 use std::path::Path;
-use uuid::Uuid;
 
 mod add_url;
 use add_url::add_url;
@@ -13,6 +10,9 @@ use check_auth_status::check_auth_status;
 
 mod get_user_id_from_session;
 use get_user_id_from_session::get_user_id_from_session;
+
+mod persist_auth_session;
+use persist_auth_session::persist_auth_session;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -108,12 +108,5 @@ async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
     persist_auth_session(user_id)?;
 
     println!("User {username} added successfully with ID {user_id}!");
-    Ok(())
-}
-
-fn persist_auth_session(user_id: Uuid) -> color_eyre::Result<()> {
-    let mut file = fs::File::create("auth.txt")?;
-    writeln!(file, "{user_id}")?;
-
     Ok(())
 }
