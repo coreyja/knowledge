@@ -10,8 +10,6 @@ use auth::check_auth_status;
 use auth::get_user_id_from_session;
 use auth::persist_auth_session;
 
-
-
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct KnowledgeArgs {
