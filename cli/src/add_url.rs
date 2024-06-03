@@ -12,11 +12,5 @@ pub async fn add_url(
     allow_existing: bool,
 ) -> Result<AddUrlOutcome> {
     check_auth_status(pool).await?;
-
-    let result = db::add_url(pool, url, user_id, &allow_existing).await;
-    match result {
-        Ok(page) if page.url.contains("re-adding is allowed") => Ok(AddUrlOutcome::Existing(page)),
-        Ok(page) => Ok(AddUrlOutcome::Created(page)),
-        Err(e) => Err(e),
-    }
+    db::add_url(pool, url, user_id, &allow_existing).await
 }

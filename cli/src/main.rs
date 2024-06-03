@@ -5,14 +5,12 @@ use std::path::Path;
 mod add_url;
 use add_url::add_url;
 
-mod check_auth_status;
-use check_auth_status::check_auth_status;
+mod auth;
+use auth::check_auth_status;
+use auth::get_user_id_from_session;
+use auth::persist_auth_session;
 
-mod get_user_id_from_session;
-use get_user_id_from_session::get_user_id_from_session;
 
-mod persist_auth_session;
-use persist_auth_session::persist_auth_session;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]

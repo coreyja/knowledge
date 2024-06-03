@@ -40,7 +40,7 @@ pub async fn add_url(
     url: &str,
     user_id: Uuid,
     allow_existing: &bool,
-) -> color_eyre::Result<Page> {
+) -> color_eyre::Result<AddUrlOutcome> {
     let new_page_id = Uuid::new_v4();
 
     let upsert_result = sqlx::query_as!(
@@ -57,13 +57,13 @@ pub async fn add_url(
 
     if upsert_result.page_id == new_page_id {
         println!("URL '{}' added successfully.", upsert_result.url);
-        Ok(upsert_result)
+        Ok(AddUrlOutcome::Created(upsert_result))
     } else if *allow_existing {
         println!(
             "URL '{}' exists but re-adding is allowed.",
             upsert_result.url
         );
-        Ok(upsert_result)
+        Ok(AddUrlOutcome::Existing(upsert_result))
     } else {
         Err(color_eyre::eyre::eyre!(
             "URL '{}' already exists and re-adding is not allowed.",
