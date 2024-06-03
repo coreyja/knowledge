@@ -3,7 +3,6 @@ use std::path::Path;
 
 use crate::auth::{check_auth_status, persist_auth_session};
 
-
 pub async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Result<()> {
     if Path::new("auth.txt").exists() {
         check_auth_status(pool).await?;
