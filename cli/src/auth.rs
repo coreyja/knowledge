@@ -1,4 +1,4 @@
-use db::user::get_username_by_id;
+use db::users::get_username_by_id;
 use db::PgPool;
 use std::fs;
 use std::io::Read;

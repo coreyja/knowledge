@@ -1,4 +1,4 @@
-use db::{user::create_user, PgPool};
+use db::{users::create_user, PgPool};
 use std::path::Path;
 
 use crate::auth::{check_auth_status, persist_auth_session};

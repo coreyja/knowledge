@@ -3,7 +3,7 @@ use sqlx::postgres::PgPoolOptions;
 pub use sqlx::PgPool;
 
 pub mod add_url;
-pub mod user;
+pub mod users;
 
 #[tracing::instrument(err)]
 pub async fn setup_db_pool() -> color_eyre::Result<PgPool> {
