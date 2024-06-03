@@ -10,20 +10,20 @@ pub struct User {
     pub user_name: String,
 }
 
-/// Creates a new user with the given username.
-///
-/// # Arguments
-///
-/// * `pool` - A reference to the `PostgreSQL` connection pool.
-/// * `username` - The username of the new user.
-///
-/// # Returns
-///
-/// Returns a `Result` which is either the UUID of the newly created user or an error.
-///
-/// # Panics
-///
-/// This function may panic if the SQL query fails to execute.
+#[derive(sqlx::FromRow, Debug)]
+pub struct Page {
+    pub page_id: Uuid,
+    pub user_id: Uuid,
+    pub url: String,
+}
+
+#[allow(clippy::module_name_repetitions)]
+#[derive(Debug)]
+pub enum AddUrlOutcome {
+    Created(Page),
+    Existing(Page),
+}
+
 pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<Uuid> {
     let result = sqlx::query!(
         "INSERT INTO Users (user_name) VALUES ($1) RETURNING user_id",
@@ -33,6 +33,43 @@ pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<U
     .await?;
 
     Ok(result.user_id)
+}
+
+pub async fn add_url(
+    pool: &PgPool,
+    url: &str,
+    user_id: Uuid,
+    allow_existing: &bool,
+) -> color_eyre::Result<AddUrlOutcome> {
+    let new_page_id = Uuid::new_v4();
+
+    let upsert_result = sqlx::query_as!(
+        Page,
+        "INSERT INTO Pages (page_id, user_id, url) VALUES ($1, $2, $3)
+         ON CONFLICT (user_id, url) DO UPDATE SET url = EXCLUDED.url
+         RETURNING *",
+        new_page_id,
+        user_id,
+        url
+    )
+    .fetch_one(pool)
+    .await?;
+
+    if upsert_result.page_id == new_page_id {
+        println!("URL '{}' added successfully.", upsert_result.url);
+        Ok(AddUrlOutcome::Created(upsert_result))
+    } else if *allow_existing {
+        println!(
+            "URL '{}' exists but re-adding is allowed.",
+            upsert_result.url
+        );
+        Ok(AddUrlOutcome::Existing(upsert_result))
+    } else {
+        Err(color_eyre::eyre::eyre!(
+            "URL '{}' already exists and re-adding is not allowed.",
+            upsert_result.url
+        ))
+    }
 }
 
 pub async fn get_users(pool: &PgPool) -> Result<Vec<User>> {

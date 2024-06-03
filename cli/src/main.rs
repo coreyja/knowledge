@@ -1,10 +1,14 @@
 use clap::{Parser, Subcommand};
 use db::PgPool;
-use std::fs;
-use std::io::Read;
-use std::io::Write;
 use std::path::Path;
-use uuid::Uuid;
+
+mod add_url;
+use add_url::add_url;
+
+mod auth;
+use auth::check_auth_status;
+use auth::get_user_id_from_session;
+use auth::persist_auth_session;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -22,6 +26,12 @@ enum Command {
     },
     DisplayUsers,
     Status,
+    AddUrl {
+        #[arg(short, long)]
+        url: String,
+        #[arg(short, long)]
+        allow_existing: bool,
+    },
 }
 
 #[tokio::main]
@@ -40,7 +50,14 @@ async fn main() -> color_eyre::Result<()> {
             display_users(&db_pool).await?;
         }
         Command::Status => {
-            check_status(&db_pool).await?;
+            check_auth_status(&db_pool).await?;
+        }
+        Command::AddUrl {
+            url,
+            allow_existing,
+        } => {
+            let user_id = get_user_id_from_session()?;
+            add_url(&db_pool, &url, user_id, allow_existing).await?;
         }
     }
 
@@ -62,7 +79,7 @@ async fn display_users(pool: &PgPool) -> color_eyre::Result<()> {
 
 async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Result<()> {
     if Path::new("auth.txt").exists() {
-        check_status(pool).await?;
+        check_auth_status(pool).await?;
         return Ok(());
     }
 
@@ -82,35 +99,10 @@ async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre::Res
     Ok(())
 }
 
-async fn check_status(pool: &PgPool) -> color_eyre::Result<()> {
-    let user_path = Path::new("auth.txt");
-    if user_path.exists() {
-        let mut file = fs::File::open("auth.txt")?;
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
-        let user_id = Uuid::parse_str(contents.trim())?;
-
-        match db::get_username_by_id(pool, user_id).await? {
-            Some(username) => println!("Logged in with Username: {username}, User ID: {user_id}"),
-            None => println!("file empty"),
-        }
-    } else {
-        println!("Not logged in.");
-    }
-    Ok(())
-}
-
 async fn add_user(pool: &PgPool, username: &str) -> color_eyre::Result<()> {
     let user_id = db::create_user(pool, username).await?;
     persist_auth_session(user_id)?;
 
     println!("User {username} added successfully with ID {user_id}!");
-    Ok(())
-}
-
-fn persist_auth_session(user_id: Uuid) -> color_eyre::Result<()> {
-    let mut file = fs::File::create("auth.txt")?;
-    writeln!(file, "{user_id}")?;
-
     Ok(())
 }
