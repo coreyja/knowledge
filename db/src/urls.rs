@@ -1,6 +1,9 @@
 pub use sqlx;
+use sqlx::types::chrono;
 pub use sqlx::PgPool;
 use uuid::Uuid;
+use color_eyre::Result;
+use reqwest;
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
@@ -51,4 +54,58 @@ pub async fn add_url(
             upsert_result.url
         ))
     }
+}
+
+
+pub async fn fetch_url_from_pages_table(pool: &PgPool, page_id: Uuid) -> color_eyre::Result<Page> {
+    let result = sqlx::query_as!(
+        Page,
+        "SELECT page_id, user_id, url FROM Pages WHERE page_id = $1",
+        page_id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(result)
+}
+
+
+async fn download_raw_html(pool: &PgPool, page_id: Uuid) -> color_eyre::Result<String> {
+    let page = fetch_url_from_pages_table(pool, page_id).await?;
+    let response = reqwest::get(&page.url).await.map_err(|e| color_eyre::Report::from(e))?;
+    let html = response.text().await.map_err(|e| color_eyre::Report::from(e))?;
+    Ok(html)
+}
+
+async fn store_raw_html_in_page_snapshot(pool: &PgPool, page_id: Uuid) -> color_eyre::Result<()> {
+    let raw_html = download_raw_html(pool, page_id).await?;
+    let current_time = chrono::Utc::now();
+    let page = fetch_url_from_pages_table(pool, page_id).await?;
+    
+    let result = sqlx::query!(
+        "INSERT INTO PageSnapShot (raw_html, fetched_at, page_id) 
+         VALUES ($1, $2, $3)",
+         raw_html,
+         current_time, 
+         page.page_id
+    )
+    .execute(pool)
+    .await?;
+
+
+
+    if result.rows_affected() == 1 {
+        Ok(())
+    } else {
+        Err(color_eyre::eyre::eyre!(
+            "Failed to update PageSnapShot for page_id '{}'.",
+            page_id, 
+        ))
+    }
+}
+
+pub async fn process_page_snapshot(pool: &PgPool, page_id: Uuid, user_id: Uuid, url: &str) -> color_eyre::Result<()> {
+    let outcome = store_raw_html_in_page_snapshot(pool, page_id).await?;
+    println!("Outcome: {:?}", outcome);
+    Ok(())
 }

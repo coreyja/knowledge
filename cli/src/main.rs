@@ -8,6 +8,8 @@ use auth::check_auth_status;
 use auth::get_user_id_from_session;
 
 mod sign_up;
+use db::urls::process_page_snapshot;
+use db::urls::AddUrlOutcome;
 use sign_up::sign_up;
 
 mod display_user;
@@ -60,7 +62,10 @@ async fn main() -> color_eyre::Result<()> {
             allow_existing,
         } => {
             let user_id = get_user_id_from_session()?;
-            append_url_to_db(&db_pool, &url, user_id, allow_existing).await?;
+            let outcome = append_url_to_db(&db_pool, &url, user_id, allow_existing).await?;
+            if let AddUrlOutcome::Created(page) | AddUrlOutcome::Existing(page) = outcome {
+                process_page_snapshot(&db_pool, page.page_id, user_id, &url).await?;
+            }
         }
     }
 

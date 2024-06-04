@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 color-eyre = { workspace = true }
+reqwest = "0.12.4"
 sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "chrono", "migrate", "macros", "uuid"] }
 tracing = { workspace = true }
 uuid = { workspace = true }
