@@ -2,7 +2,7 @@ pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
 pub use sqlx::PgPool;
 
-pub mod add_url;
+pub mod add_urls;
 pub mod users;
 
 #[tracing::instrument(err)]

@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 
 mod add_url;
-use add_url::add_url;
+use add_url::add_url_to_db;
 
 mod auth;
 use auth::check_auth_status;
@@ -60,7 +60,7 @@ async fn main() -> color_eyre::Result<()> {
             allow_existing,
         } => {
             let user_id = get_user_id_from_session()?;
-            add_url(&db_pool, &url, user_id, allow_existing).await?;
+            add_url_to_db(&db_pool, &url, user_id, allow_existing).await?;
         }
     }
 
