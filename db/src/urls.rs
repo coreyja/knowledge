@@ -19,6 +19,7 @@ pub enum AddUrlOutcome {
     Existing(Page),
 }
 
+
 pub async fn add_url(
     pool: &PgPool,
     url: &str,
@@ -77,34 +78,34 @@ async fn download_raw_html(pool: &PgPool, page_id: Uuid) -> color_eyre::Result<S
     Ok(html)
 }
 
-async fn store_raw_html_in_page_snapshot(pool: &PgPool, page_id: Uuid) -> color_eyre::Result<()> {
+#[derive(sqlx::FromRow, Debug)]
+pub struct PageSnapShot {
+    pub page_snapshot_id: Uuid,
+    pub page_id: Uuid,
+    pub raw_html: String,
+    pub fetched_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+async fn store_raw_html_in_page_snapshot(pool: &PgPool, page_id: Uuid) -> color_eyre::Result<PageSnapShot> {
     let raw_html = download_raw_html(pool, page_id).await?;
     let current_time = chrono::Utc::now();
     let page = fetch_url_from_pages_table(pool, page_id).await?;
     
-    let result = sqlx::query!(
+    let result = sqlx::query_as!(
+        PageSnapShot,
         "INSERT INTO PageSnapShot (raw_html, fetched_at, page_id) 
-         VALUES ($1, $2, $3)",
+         VALUES ($1, $2, $3) RETURNING page_snapshot_id, page_id, raw_html, fetched_at",
          raw_html,
          current_time, 
          page.page_id
     )
-    .execute(pool)
+    .fetch_one(pool)
     .await?;
 
-
-
-    if result.rows_affected() == 1 {
-        Ok(())
-    } else {
-        Err(color_eyre::eyre::eyre!(
-            "Failed to update PageSnapShot for page_id '{}'.",
-            page_id, 
-        ))
-    }
+    Ok(result)
 }
 
-pub async fn process_page_snapshot(pool: &PgPool, page_id: Uuid, user_id: Uuid, url: &str) -> color_eyre::Result<()> {
+pub async fn process_page_snapshot(pool: &PgPool, page_id: Uuid, _user_id: Uuid, _url: &str) -> color_eyre::Result<()> {
     let outcome = store_raw_html_in_page_snapshot(pool, page_id).await?;
     println!("Outcome: {:?}", outcome);
     Ok(())

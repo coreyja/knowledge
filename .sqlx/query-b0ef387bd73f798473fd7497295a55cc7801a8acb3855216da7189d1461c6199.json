@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO PageSnapShot (raw_html, fetched_at, page_id) \n         VALUES ($1, $2, $3) RETURNING page_snapshot_id, page_id, raw_html, fetched_at",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "page_snapshot_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "page_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "raw_html",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "fetched_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamptz",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "b0ef387bd73f798473fd7497295a55cc7801a8acb3855216da7189d1461c6199"
+}
