@@ -63,7 +63,7 @@ async fn main() -> color_eyre::Result<()> {
         } => {
             let user_id = get_user_id_from_session()?;
             append_url(&db_pool, &url, user_id, allow_existing).await?;
-            // let outcome = append_url_to_db(&db_pool, &url, user_id, allow_existing).await?;
+            // let outcome = append_url(&db_pool, &url, user_id, allow_existing).await?;
             // if let AddUrlOutcome::Created(page) | AddUrlOutcome::Existing(page) = outcome {
             //     process_page_snapshot(&db_pool, page.page_id, user_id, &url).await?;
             // }
