@@ -75,22 +75,18 @@ pub async fn fetch_url_from_pages_table(pool: &PgPool, page_id: Uuid) -> color_e
     Ok(result)
 }
 
-async fn download_raw_html(pool: &PgPool, page_id: Uuid) -> color_eyre::Result<String> {
-    let page = fetch_url_from_pages_table(pool, page_id).await?;
-    let response = reqwest::get(&page.url)
-        .await
-        .map_err(color_eyre::Report::from)?;
+async fn download_raw_html(pool: &PgPool, url: &str) -> color_eyre::Result<String> {
+    let response = reqwest::get(url).await.map_err(color_eyre::Report::from)?;
     let html = response.text().await.map_err(color_eyre::Report::from)?;
     Ok(html)
 }
 
 async fn store_raw_html_in_page_snapshot(
     pool: &PgPool,
-    page_id: Uuid,
+    page: Page,
 ) -> color_eyre::Result<PageSnapShot> {
-    let raw_html = download_raw_html(pool, page_id).await?;
+    let raw_html = download_raw_html(pool, &page.url).await?;
     let current_time = chrono::Utc::now();
-    let page = fetch_url_from_pages_table(pool, page_id).await?;
 
     let result = sqlx::query_as!(
         PageSnapShot,
@@ -106,13 +102,8 @@ async fn store_raw_html_in_page_snapshot(
     Ok(result)
 }
 
-pub async fn process_page_snapshot(
-    pool: &PgPool,
-    page_id: Uuid,
-    _user_id: Uuid,
-    _url: &str,
-) -> color_eyre::Result<()> {
-    let outcome = store_raw_html_in_page_snapshot(pool, page_id).await?;
+pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
+    let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
     println!("Outcome: {outcome:?}");
     Ok(())
 }
