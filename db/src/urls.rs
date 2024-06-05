@@ -75,7 +75,7 @@ pub async fn fetch_url_from_pages_table(pool: &PgPool, page_id: Uuid) -> color_e
     Ok(result)
 }
 
-async fn download_raw_html(pool: &PgPool, url: &str) -> color_eyre::Result<String> {
+async fn download_raw_html(_pool: &PgPool, url: &str) -> color_eyre::Result<String> {
     let response = reqwest::get(url).await.map_err(color_eyre::Report::from)?;
     let html = response.text().await.map_err(color_eyre::Report::from)?;
     Ok(html)
