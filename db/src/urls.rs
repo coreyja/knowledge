@@ -79,11 +79,8 @@ async fn download_raw_html(pool: &PgPool, page_id: Uuid) -> color_eyre::Result<S
     let page = fetch_url_from_pages_table(pool, page_id).await?;
     let response = reqwest::get(&page.url)
         .await
-        .map_err(|e| color_eyre::Report::from(e))?;
-    let html = response
-        .text()
-        .await
-        .map_err(|e| color_eyre::Report::from(e))?;
+        .map_err(color_eyre::Report::from)?;
+    let html = response.text().await.map_err(color_eyre::Report::from)?;
     Ok(html)
 }
 
@@ -116,6 +113,6 @@ pub async fn process_page_snapshot(
     _url: &str,
 ) -> color_eyre::Result<()> {
     let outcome = store_raw_html_in_page_snapshot(pool, page_id).await?;
-    println!("Outcome: {:?}", outcome);
+    println!("Outcome: {outcome:?}");
     Ok(())
 }
