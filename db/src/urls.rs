@@ -1,4 +1,6 @@
+use reqwest;
 pub use sqlx;
+use sqlx::types::chrono;
 pub use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -14,6 +16,14 @@ pub struct Page {
 pub enum AddUrlOutcome {
     Created(Page),
     Existing(Page),
+}
+
+#[derive(sqlx::FromRow, Debug)]
+pub struct PageSnapShot {
+    pub page_snapshot_id: Uuid,
+    pub page_id: Uuid,
+    pub raw_html: String,
+    pub fetched_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 pub async fn add_url(
@@ -51,4 +61,37 @@ pub async fn add_url(
             upsert_result.url
         ))
     }
+}
+
+async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
+    let response = reqwest::get(url).await.map_err(color_eyre::Report::from)?;
+    let html = response.text().await.map_err(color_eyre::Report::from)?;
+    Ok(html)
+}
+
+async fn store_raw_html_in_page_snapshot(
+    pool: &PgPool,
+    page: Page,
+) -> color_eyre::Result<PageSnapShot> {
+    let raw_html = download_raw_html(&page.url).await?;
+    let current_time = chrono::Utc::now();
+
+    let result = sqlx::query_as!(
+        PageSnapShot,
+        "INSERT INTO PageSnapShot (raw_html, fetched_at, page_id) 
+         VALUES ($1, $2, $3) RETURNING *",
+        raw_html,
+        current_time,
+        page.page_id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(result)
+}
+
+pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
+    let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
+    println!("Outcome: {outcome:?}");
+    Ok(())
 }

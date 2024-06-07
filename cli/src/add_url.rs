@@ -3,7 +3,7 @@ use db::urls::{add_url, AddUrlOutcome, PgPool};
 use uuid::Uuid;
 
 use crate::check_auth_status;
-pub async fn append_url_to_db(
+pub async fn append_url(
     pool: &PgPool,
     url: &str,
     user_id: Uuid,
