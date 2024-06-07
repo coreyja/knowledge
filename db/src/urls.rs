@@ -79,7 +79,7 @@ async fn store_raw_html_in_page_snapshot(
     let result = sqlx::query_as!(
         PageSnapShot,
         "INSERT INTO PageSnapShot (raw_html, fetched_at, page_id) 
-         VALUES ($1, $2, $3) RETURNING page_snapshot_id, page_id, raw_html, fetched_at",
+         VALUES ($1, $2, $3) RETURNING *",
         raw_html,
         current_time,
         page.page_id

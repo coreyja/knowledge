@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO PageSnapShot (raw_html, fetched_at, page_id) \n         VALUES ($1, $2, $3) RETURNING page_snapshot_id, page_id, raw_html, fetched_at",
+  "query": "INSERT INTO PageSnapShot (raw_html, fetched_at, page_id) \n         VALUES ($1, $2, $3) RETURNING *",
   "describe": {
     "columns": [
       {
@@ -38,5 +38,5 @@
       true
     ]
   },
-  "hash": "b0ef387bd73f798473fd7497295a55cc7801a8acb3855216da7189d1461c6199"
+  "hash": "37aac1eb6235a9aaa84d753e072743059596363fb3c701efb7e027d409814f4e"
 }
