@@ -7,12 +7,14 @@ edition = "2021"
 
 [dependencies]
 color-eyre = { workspace = true }
+readability = "0.3.0"
 reqwest = { version = "0.12.4", features = [
   "rustls-tls"
 ], default-features = false }
 
 sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "chrono", "migrate", "macros", "uuid"] }
 tracing = { workspace = true }
+url.workspace = true
 uuid = { workspace = true }
 
 [dev-dependencies]
