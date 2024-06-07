@@ -1,10 +1,10 @@
-use reqwest;
 use readability;
 use readability::extractor;
-use url::Url;
+use reqwest;
 pub use sqlx;
 use sqlx::types::chrono;
 pub use sqlx::PgPool;
+use url::Url;
 use uuid::Uuid;
 
 #[derive(sqlx::FromRow, Debug)]
@@ -75,7 +75,8 @@ async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
 
 async fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     let mut raw_html_cursor = std::io::Cursor::new(raw_html);
-    let article = extractor::extract(&mut raw_html_cursor, url).map_err(|e| color_eyre::eyre::eyre!(e.to_string()))?;
+    let article = extractor::extract(&mut raw_html_cursor, url)
+        .map_err(|e| color_eyre::eyre::eyre!(e.to_string()))?;
     Ok(article.content)
 }
 
@@ -87,7 +88,7 @@ async fn store_raw_html_in_page_snapshot(
     let current_time = chrono::Utc::now();
     let url = Url::parse(&page.url)?;
     let cleaned_html = clean_raw_html(&raw_html, &url).await?;
-    
+
     let result = sqlx::query_as!(
         PageSnapShot,
         "INSERT INTO PageSnapShot (raw_html, fetched_at, cleaned_html, page_id) 
