@@ -87,7 +87,7 @@ async fn store_raw_html_in_page_snapshot(
     let raw_html = download_raw_html(&page.url).await?;
     let current_time = chrono::Utc::now();
     let url = Url::parse(&page.url)?;
-    let cleaned_html = clean_raw_html(&raw_html, &url).await?;
+    let cleaned_html = clean_raw_html(&raw_html, &url)?;
 
     let result = sqlx::query_as!(
         PageSnapShot,
