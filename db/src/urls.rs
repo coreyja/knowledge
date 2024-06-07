@@ -63,19 +63,7 @@ pub async fn add_url(
     }
 }
 
-pub async fn fetch_url_from_pages_table(pool: &PgPool, page_id: Uuid) -> color_eyre::Result<Page> {
-    let result = sqlx::query_as!(
-        Page,
-        "SELECT page_id, user_id, url FROM Pages WHERE page_id = $1",
-        page_id
-    )
-    .fetch_one(pool)
-    .await?;
-
-    Ok(result)
-}
-
-async fn download_raw_html(_pool: &PgPool, url: &str) -> color_eyre::Result<String> {
+async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
     let response = reqwest::get(url).await.map_err(color_eyre::Report::from)?;
     let html = response.text().await.map_err(color_eyre::Report::from)?;
     Ok(html)
@@ -85,7 +73,7 @@ async fn store_raw_html_in_page_snapshot(
     pool: &PgPool,
     page: Page,
 ) -> color_eyre::Result<PageSnapShot> {
-    let raw_html = download_raw_html(pool, &page.url).await?;
+    let raw_html = download_raw_html(&page.url).await?;
     let current_time = chrono::Utc::now();
 
     let result = sqlx::query_as!(
