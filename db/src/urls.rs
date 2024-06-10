@@ -30,6 +30,13 @@ pub struct PageSnapShot {
     pub fetched_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
+#[derive(sqlx::FromRow, Debug)]
+pub struct Markdown {
+    pub markdown_id: Uuid,
+    pub title: Option<String>,
+    pub content_md: String,
+}
+
 pub async fn add_url(
     pool: &PgPool,
     url: &str,
@@ -100,11 +107,25 @@ async fn store_raw_html_in_page_snapshot(
     .fetch_one(pool)
     .await?;
 
+    let markdown_content = html2md::parse_html(&cleaned_html);
+    println!("Markdown content: {markdown_content:?}");
+
+    let markdown_result = sqlx::query_as!(
+        Markdown,
+        "INSERT INTO Markdown (markdown_id, content_md) VALUES ($1, $2) RETURNING *",
+        result.page_snapshot_id,
+        markdown_content
+    )
+    .fetch_one(pool)
+    .await?;
+
+    println!("Markdown result: {markdown_result:?}");
+
     Ok(result)
 }
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
     let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
-    println!("Outcome: {outcome:?}");
+    // println!("Outcome: {outcome:?}");
     Ok(())
 }
