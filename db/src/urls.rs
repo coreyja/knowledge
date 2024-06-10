@@ -86,6 +86,27 @@ fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     Ok(article.content)
 }
 
+async fn store_markdown(
+    pool: &PgPool,
+    page_snapshot_id: Uuid,
+    cleaned_html: &str,
+) -> color_eyre::Result<Markdown> {
+    let markdown_content = html2md::parse_html(cleaned_html);
+    println!("Markdown content: {markdown_content:?}");
+
+    let markdown_result = sqlx::query_as!(
+        Markdown,
+        "INSERT INTO Markdown (markdown_id, content_md) VALUES ($1, $2) RETURNING *",
+        page_snapshot_id,
+        markdown_content
+    )
+    .fetch_one(pool)
+    .await?;
+
+    println!("Markdown result: {markdown_result:?}");
+    Ok(markdown_result)
+}
+
 async fn store_raw_html_in_page_snapshot(
     pool: &PgPool,
     page: Page,
@@ -107,18 +128,7 @@ async fn store_raw_html_in_page_snapshot(
     .fetch_one(pool)
     .await?;
 
-    let markdown_content = html2md::parse_html(&cleaned_html);
-    println!("Markdown content: {markdown_content:?}");
-
-    let markdown_result = sqlx::query_as!(
-        Markdown,
-        "INSERT INTO Markdown (markdown_id, content_md) VALUES ($1, $2) RETURNING *",
-        result.page_snapshot_id,
-        markdown_content
-    )
-    .fetch_one(pool)
-    .await?;
-
+    let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
     println!("Markdown result: {markdown_result:?}");
 
     Ok(result)
@@ -126,6 +136,6 @@ async fn store_raw_html_in_page_snapshot(
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
     let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
-    // println!("Outcome: {outcome:?}");
+    println!("Outcome: {outcome:?}");
     Ok(())
 }
