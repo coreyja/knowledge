@@ -1,7 +1,10 @@
+use readability;
+use readability::extractor;
 use reqwest;
 pub use sqlx;
 use sqlx::types::chrono;
 pub use sqlx::PgPool;
+use url::Url;
 use uuid::Uuid;
 
 #[derive(sqlx::FromRow, Debug)]
@@ -23,6 +26,7 @@ pub struct PageSnapShot {
     pub page_snapshot_id: Uuid,
     pub page_id: Uuid,
     pub raw_html: String,
+    pub cleaned_html: String,
     pub fetched_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
@@ -64,9 +68,15 @@ pub async fn add_url(
 }
 
 async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
-    let response = reqwest::get(url).await.map_err(color_eyre::Report::from)?;
-    let html = response.text().await.map_err(color_eyre::Report::from)?;
+    let response = reqwest::get(url).await?;
+    let html = response.text().await?;
     Ok(html)
+}
+
+fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
+    let mut raw_html_cursor = std::io::Cursor::new(raw_html);
+    let article = extractor::extract(&mut raw_html_cursor, url)?;
+    Ok(article.content)
 }
 
 async fn store_raw_html_in_page_snapshot(
@@ -75,13 +85,16 @@ async fn store_raw_html_in_page_snapshot(
 ) -> color_eyre::Result<PageSnapShot> {
     let raw_html = download_raw_html(&page.url).await?;
     let current_time = chrono::Utc::now();
+    let url = Url::parse(&page.url)?;
+    let cleaned_html = clean_raw_html(&raw_html, &url)?;
 
     let result = sqlx::query_as!(
         PageSnapShot,
-        "INSERT INTO PageSnapShot (raw_html, fetched_at, page_id) 
-         VALUES ($1, $2, $3) RETURNING *",
+        "INSERT INTO PageSnapShot (raw_html, fetched_at, cleaned_html, page_id) 
+        VALUES ($1, $2, $3, $4) RETURNING *",
         raw_html,
         current_time,
+        cleaned_html,
         page.page_id
     )
     .fetch_one(pool)

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO PageSnapShot (raw_html, fetched_at, page_id) \n         VALUES ($1, $2, $3) RETURNING *",
+  "query": "INSERT INTO PageSnapShot (raw_html, fetched_at, cleaned_html, page_id) \n        VALUES ($1, $2, $3, $4) RETURNING *",
   "describe": {
     "columns": [
       {
@@ -22,12 +22,18 @@
         "ordinal": 3,
         "name": "fetched_at",
         "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "cleaned_html",
+        "type_info": "Text"
       }
     ],
     "parameters": {
       "Left": [
         "Text",
         "Timestamptz",
+        "Text",
         "Uuid"
       ]
     },
@@ -35,8 +41,9 @@
       false,
       false,
       false,
-      true
+      true,
+      false
     ]
   },
-  "hash": "37aac1eb6235a9aaa84d753e072743059596363fb3c701efb7e027d409814f4e"
+  "hash": "25333ea19706dec282ea99c2bbdcabf71781ec6bd326118026977937c47e1558"
 }
