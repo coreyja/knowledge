@@ -68,15 +68,14 @@ pub async fn add_url(
 }
 
 async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
-    let response = reqwest::get(url).await.map_err(color_eyre::Report::from)?;
-    let html = response.text().await.map_err(color_eyre::Report::from)?;
+    let response = reqwest::get(url).await?;
+    let html = response.text().await?;
     Ok(html)
 }
 
 fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     let mut raw_html_cursor = std::io::Cursor::new(raw_html);
-    let article = extractor::extract(&mut raw_html_cursor, url)
-        .map_err(|e| color_eyre::eyre::eyre!(e.to_string()))?;
+    let article = extractor::extract(&mut raw_html_cursor, url)?;
     Ok(article.content)
 }
 
