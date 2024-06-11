@@ -1,19 +1,13 @@
+use openai::chat::{ChatCompletionBuilder, ChatCompletionMessage, ChatCompletionMessageRole};
 use readability;
 use readability::extractor;
 use reqwest;
 pub use sqlx;
 use sqlx::types::chrono;
 pub use sqlx::PgPool;
-use std::collections::HashMap;
 use std::env;
 use url::Url;
 use uuid::Uuid;
-
-use openai::chat::{
-    ChatCompletionBuilder, ChatCompletionMessage, ChatCompletionMessageRole, ChatCompletionRequest,
-};
-use openai::completions::Completion;
-use openai::completions::CompletionRequest;
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
@@ -115,7 +109,7 @@ async fn generate_summary(content: &str) -> color_eyre::Result<String> {
     let request = ChatCompletionBuilder::default()
         .model("gpt-4".to_string())
         .messages(messages)
-        .max_tokens(100u64)
+        .max_tokens(4096u64)
         .temperature(0.7)
         .top_p(1.0)
         .build()?;
@@ -172,13 +166,13 @@ async fn store_raw_html_in_page_snapshot(
     .await?;
 
     let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    // println!("Markdown result: {markdown_result:?}");
+    println!("Markdown result: {markdown_result:?}");
 
     Ok(result)
 }
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
     let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
-    // println!("Outcome: {outcome:?}");
+    println!("Outcome: {outcome:?}");
     Ok(())
 }
