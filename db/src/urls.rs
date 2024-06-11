@@ -4,8 +4,16 @@ use reqwest;
 pub use sqlx;
 use sqlx::types::chrono;
 pub use sqlx::PgPool;
+use std::collections::HashMap;
+use std::env;
 use url::Url;
 use uuid::Uuid;
+
+use openai::chat::{
+    ChatCompletionBuilder, ChatCompletionMessage, ChatCompletionMessageRole, ChatCompletionRequest,
+};
+use openai::completions::Completion;
+use openai::completions::CompletionRequest;
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
@@ -83,7 +91,42 @@ async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
 fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     let mut raw_html_cursor = std::io::Cursor::new(raw_html);
     let article = extractor::extract(&mut raw_html_cursor, url)?;
-    Ok(article.content)
+    Ok(article.text)
+}
+
+async fn generate_summary(content: &str) -> color_eyre::Result<String> {
+    let api_key = env::var("OPEN_AI_API_KEY").expect("OPEN_AI_API_KEY must be set");
+    openai::set_key(api_key);
+
+    let messages = vec![
+        ChatCompletionMessage {
+            role: ChatCompletionMessageRole::System,
+            content: Some("You are a helpful assistant.".to_string()),
+            name: None,
+            function_call: None,
+        },
+        ChatCompletionMessage {
+            role: ChatCompletionMessageRole::User,
+            content: Some(format!("Summarize the following atricle and make sure to highlight the important parts: {}", content)),
+            name: None,
+            function_call: None,
+        },
+    ];
+    let request = ChatCompletionBuilder::default()
+        .model("gpt-4".to_string())
+        .messages(messages)
+        .max_tokens(100u64)
+        .temperature(0.7)
+        .top_p(1.0)
+        .build()?;
+
+    let response = openai::chat::ChatCompletion::create(&request).await?;
+    let summary = response.choices[0]
+        .message
+        .content
+        .clone()
+        .unwrap_or_default();
+    Ok(summary)
 }
 
 async fn store_markdown(
@@ -92,7 +135,8 @@ async fn store_markdown(
     cleaned_html: &str,
 ) -> color_eyre::Result<Markdown> {
     let markdown_content = html2md::parse_html(cleaned_html);
-    println!("Markdown content: {markdown_content:?}");
+    let summary = generate_summary(&markdown_content).await?;
+    println!("Summary: {summary}");
 
     let markdown_result = sqlx::query_as!(
         Markdown,
@@ -103,7 +147,6 @@ async fn store_markdown(
     .fetch_one(pool)
     .await?;
 
-    println!("Markdown result: {markdown_result:?}");
     Ok(markdown_result)
 }
 
@@ -129,13 +172,13 @@ async fn store_raw_html_in_page_snapshot(
     .await?;
 
     let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    println!("Markdown result: {markdown_result:?}");
+    // println!("Markdown result: {markdown_result:?}");
 
     Ok(result)
 }
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
     let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
-    println!("Outcome: {outcome:?}");
+    // println!("Outcome: {outcome:?}");
     Ok(())
 }
