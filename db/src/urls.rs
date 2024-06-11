@@ -1,13 +1,13 @@
-use openai::chat::{ChatCompletionBuilder, ChatCompletionMessage, ChatCompletionMessageRole};
 use readability;
 use readability::extractor;
 use reqwest;
 pub use sqlx;
 use sqlx::types::chrono;
 pub use sqlx::PgPool;
-use std::env;
 use url::Url;
 use uuid::Uuid;
+
+use crate::openai_utils::generate_summary;
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
@@ -86,41 +86,6 @@ fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     let mut raw_html_cursor = std::io::Cursor::new(raw_html);
     let article = extractor::extract(&mut raw_html_cursor, url)?;
     Ok(article.text)
-}
-
-async fn generate_summary(content: &str) -> color_eyre::Result<String> {
-    let api_key = env::var("OPEN_AI_API_KEY").expect("OPEN_AI_API_KEY must be set");
-    openai::set_key(api_key);
-
-    let messages = vec![
-        ChatCompletionMessage {
-            role: ChatCompletionMessageRole::System,
-            content: Some("You are a helpful assistant.".to_string()),
-            name: None,
-            function_call: None,
-        },
-        ChatCompletionMessage {
-            role: ChatCompletionMessageRole::User,
-            content: Some(format!("Summarize the following atricle and make sure to highlight the important parts: {}", content)),
-            name: None,
-            function_call: None,
-        },
-    ];
-    let request = ChatCompletionBuilder::default()
-        .model("gpt-4".to_string())
-        .messages(messages)
-        .max_tokens(4096u64)
-        .temperature(0.7)
-        .top_p(1.0)
-        .build()?;
-
-    let response = openai::chat::ChatCompletion::create(&request).await?;
-    let summary = response.choices[0]
-        .message
-        .content
-        .clone()
-        .unwrap_or_default();
-    Ok(summary)
 }
 
 async fn store_markdown(
