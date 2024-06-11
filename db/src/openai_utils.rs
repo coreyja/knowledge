@@ -15,7 +15,7 @@ pub async fn generate_summary(content: &str) -> Result<String> {
         },
         ChatCompletionMessage {
             role: ChatCompletionMessageRole::User,
-            content: Some(format!("Summarize the following article and make sure to highlight the important parts: {}", content)),
+            content: Some(format!("Summarize the following article and make sure to highlight the important parts: {content}")),
             name: None,
             function_call: None,
         },
