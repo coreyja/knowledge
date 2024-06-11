@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 color-eyre = { workspace = true }
+html2md = "0.2.14"
 readability = { version = "0.3.0", default-features = false }
 reqwest = { version = "0.12.4", features = [
   "rustls-tls"
