@@ -18,7 +18,7 @@ jobs:
       - name: Install SQLx CLI
         run: cargo install sqlx-cli --no-default-features --features rustls,postgres
 
-      - name: Prepare SQLx
+      - name: "Check committed `.sqlx` files. If this fails run the following locally and commit the results: `cargo sqlx prepare --workspace`"
         run: cargo sqlx prepare --workspace --check
   fmt:
     runs-on: ubuntu-latest
