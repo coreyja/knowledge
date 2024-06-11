@@ -21,7 +21,7 @@ pub async fn generate_summary(content: &str) -> Result<String> {
         },
     ];
     let request = ChatCompletionBuilder::default()
-        .model("gpt-4".to_string())
+        .model("gpt-4o".to_string())
         .messages(messages)
         .max_tokens(4096u64)
         .temperature(0.7)
