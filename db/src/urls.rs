@@ -1,3 +1,4 @@
+use openai::chat::{ChatCompletionBuilder, ChatCompletionMessage, ChatCompletionMessageRole};
 use readability;
 use readability::extractor;
 
@@ -5,6 +6,7 @@ use reqwest;
 pub use sqlx;
 use sqlx::types::chrono;
 pub use sqlx::PgPool;
+use std::env;
 use url::Url;
 use uuid::Uuid;
 
@@ -132,6 +134,7 @@ async fn store_raw_html_in_page_snapshot(
     .await?;
 
     let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
+    println!("Markdown result: {markdown_result:?}");
     println!("Markdown result: {markdown_result:?}");
 
     Ok(result)
