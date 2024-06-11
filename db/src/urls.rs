@@ -1,4 +1,3 @@
-use openai::chat::{ChatCompletionBuilder, ChatCompletionMessage, ChatCompletionMessageRole};
 use readability;
 use readability::extractor;
 
@@ -6,9 +5,10 @@ use reqwest;
 pub use sqlx;
 use sqlx::types::chrono;
 pub use sqlx::PgPool;
-use std::env;
 use url::Url;
 use uuid::Uuid;
+
+use crate::openai_utils::generate_summary;
 
 use crate::openai_utils::generate_summary;
 
