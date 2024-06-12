@@ -8,14 +8,8 @@ pub async fn generate_summary(content: &str) -> Result<String> {
 
     let messages = vec![
         ChatCompletionMessage {
-            role: ChatCompletionMessageRole::System,
-            content: Some("You are a helpful assistant.".to_string()),
-            name: None,
-            function_call: None,
-        },
-        ChatCompletionMessage {
             role: ChatCompletionMessageRole::User,
-            content: Some(format!("Summarize the following article and make sure to highlight the important parts: {content}")),
+            content: Some(format!("Provide a concise summary of the following article that can be read and understood in 2 minutes, focusing on the main points and essential details: {content}")),
             name: None,
             function_call: None,
         },
@@ -25,7 +19,6 @@ pub async fn generate_summary(content: &str) -> Result<String> {
         .messages(messages)
         .max_tokens(4096u64)
         .temperature(0.7)
-        .top_p(1.0)
         .build()?;
 
     let response = openai::chat::ChatCompletion::create(&request).await?;
