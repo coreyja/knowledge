@@ -2,6 +2,7 @@ pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
 pub use sqlx::PgPool;
 
+pub mod openai_utils;
 pub mod urls;
 pub mod users;
 

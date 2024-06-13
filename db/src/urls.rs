@@ -1,11 +1,14 @@
 use readability;
 use readability::extractor;
+
 use reqwest;
 pub use sqlx;
 use sqlx::types::chrono;
 pub use sqlx::PgPool;
 use url::Url;
 use uuid::Uuid;
+
+use crate::openai_utils::generate_summary;
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
@@ -92,7 +95,8 @@ async fn store_markdown(
     cleaned_html: &str,
 ) -> color_eyre::Result<Markdown> {
     let markdown_content = html2md::parse_html(cleaned_html);
-    println!("Markdown content: {markdown_content:?}");
+    let summary = generate_summary(&markdown_content).await?;
+    println!("Summary: {summary}");
 
     let markdown_result = sqlx::query_as!(
         Markdown,
@@ -103,7 +107,6 @@ async fn store_markdown(
     .fetch_one(pool)
     .await?;
 
-    println!("Markdown result: {markdown_result:?}");
     Ok(markdown_result)
 }
 
