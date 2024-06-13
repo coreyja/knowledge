@@ -34,7 +34,7 @@ pub async fn generate_summary(content: &str) -> Result<String> {
 }
 
 pub async fn generate_categories(content: &str) -> Result<String> {
-    let prompt = format!("Extract key topics or themes from the following article and genrate a two word unique category title. Do not exceed two words: {content}");
+    let prompt = format!("Provide a unique category title for the following article. Do not exceed two words: {content}");
     let response = generate_openai_response(&prompt, 100).await?;
     let category = response
         .split(',')

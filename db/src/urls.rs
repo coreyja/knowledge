@@ -43,7 +43,7 @@ pub struct Markdown {
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Category {
-    pub note_id: Uuid,
+    pub markdown_id: Uuid,
     pub category: Option<String>,
 }
 
@@ -96,12 +96,15 @@ fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     Ok(article.content)
 }
 
-async fn store_category(pool: &PgPool, category: &str) -> color_eyre::Result<Category> {
-    let note_id = Uuid::new_v4();
+async fn store_category(
+    pool: &PgPool,
+    markdown_id: Uuid,
+    category: &str,
+) -> color_eyre::Result<Category> {
     let result = sqlx::query_as!(
         Category,
-        "INSERT INTO Category (note_id, category) VALUES ($1, $2) RETURNING *",
-        note_id,
+        "INSERT INTO Category (markdown_id, category) VALUES ($1, $2) RETURNING *",
+        markdown_id,
         category.to_string()
     )
     .fetch_one(pool)
@@ -116,7 +119,6 @@ async fn store_markdown(
     cleaned_html: &str,
 ) -> color_eyre::Result<Markdown> {
     let markdown_content = html2md::parse_html(cleaned_html);
-    // println!("Markdown content: {markdown_content}");
     let summary = generate_summary(&markdown_content).await?;
     println!("Summary: {summary}");
 
@@ -130,9 +132,8 @@ async fn store_markdown(
     .await?;
 
     let category = generate_categories(&markdown_content).await?;
-    // println!("Category: {:?}", category);
-    let category_result = store_category(pool, &category).await?;
-    // println!("Category result: {:?}", category_result);
+    let category_result = store_category(pool, markdown_result.markdown_id, &category).await?;
+    println!("Category result: {:?}", category_result);
 
     Ok(markdown_result)
 }
@@ -159,13 +160,13 @@ async fn store_raw_html_in_page_snapshot(
     .await?;
 
     let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    // println!("Markdown result: {markdown_result:?}");
+    println!("Markdown result: {markdown_result:?}");
 
     Ok(result)
 }
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
     let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
-    // println!("Outcome: {outcome:?}");
+    println!("Outcome: {outcome:?}");
     Ok(())
 }

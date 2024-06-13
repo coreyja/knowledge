@@ -1,5 +1,5 @@
 -- Add migration script here
 CREATE TABLE IF NOT EXISTS Category (
-    note_id UUID PRIMARY KEY,
+    markdown_id UUID PRIMARY KEY REFERENCES Markdown(markdown_id),
     category TEXT
 );
