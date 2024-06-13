@@ -116,8 +116,9 @@ async fn store_markdown(
     cleaned_html: &str,
 ) -> color_eyre::Result<Markdown> {
     let markdown_content = html2md::parse_html(cleaned_html);
+    // println!("Markdown content: {markdown_content}");
     let summary = generate_summary(&markdown_content).await?;
-    // println!("Summary: {summary}");
+    println!("Summary: {summary}");
 
     let markdown_result = sqlx::query_as!(
         Markdown,
@@ -131,7 +132,7 @@ async fn store_markdown(
     let category = generate_categories(&markdown_content).await?;
     // println!("Category: {:?}", category);
     let category_result = store_category(pool, &category).await?;
-    println!("Category result: {:?}", category_result);
+    // println!("Category result: {:?}", category_result);
 
     Ok(markdown_result)
 }
