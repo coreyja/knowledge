@@ -8,7 +8,7 @@ pub use sqlx::PgPool;
 use url::Url;
 use uuid::Uuid;
 
-use crate::openai_utils::{generate_summary, generate_categories};
+use crate::openai_utils::{generate_categories, generate_summary};
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
@@ -119,7 +119,7 @@ async fn store_markdown(
 ) -> color_eyre::Result<Markdown> {
     let markdown_content = html2md::parse_html(cleaned_html);
     let summary = generate_summary(&markdown_content).await?;
-    // println!("Summary: {summary}");
+    println!("Summary: {summary}");
 
     let markdown_result = sqlx::query_as!(
         Markdown,
@@ -159,13 +159,13 @@ async fn store_raw_html_in_page_snapshot(
     .await?;
 
     let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    // println!("Markdown result: {markdown_result:?}");
+    println!("Markdown result: {markdown_result:?}");
 
     Ok(result)
 }
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
     let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
-    // println!("Outcome: {outcome:?}");
+    println!("Outcome: {outcome:?}");
     Ok(())
 }
