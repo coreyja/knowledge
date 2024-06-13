@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::openai_utils::generate_summary;
 
-use crate::openai_utils::generate_summary;
+use crate::openai_utils::{generate_summary, generate_categories};
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
@@ -40,6 +40,12 @@ pub struct Markdown {
     pub markdown_id: Uuid,
     pub title: Option<String>,
     pub content_md: String,
+}
+
+#[derive(sqlx::FromRow, Debug)]
+pub struct Category {
+    pub note_id: Uuid,
+    pub category: Option<String>,
 }
 
 pub async fn add_url(
@@ -91,6 +97,20 @@ fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     Ok(article.content)
 }
 
+async fn store_category(pool: &PgPool, category: &str) -> color_eyre::Result<Category> {
+    let note_id = Uuid::new_v4();
+    let result = sqlx::query_as!(
+        Category,
+        "INSERT INTO Category (note_id, category) VALUES ($1, $2) RETURNING *",
+        note_id,
+        category.to_string()
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(result)
+}
+
 async fn store_markdown(
     pool: &PgPool,
     page_snapshot_id: Uuid,
@@ -98,7 +118,7 @@ async fn store_markdown(
 ) -> color_eyre::Result<Markdown> {
     let markdown_content = html2md::parse_html(cleaned_html);
     let summary = generate_summary(&markdown_content).await?;
-    println!("Summary: {summary}");
+    // println!("Summary: {summary}");
 
     let markdown_result = sqlx::query_as!(
         Markdown,
@@ -108,6 +128,11 @@ async fn store_markdown(
     )
     .fetch_one(pool)
     .await?;
+
+    let category = generate_categories(&markdown_content).await?;
+    // println!("Category: {:?}", category);
+    let category_result = store_category(pool, &category).await?;
+    println!("Category result: {:?}", category_result);
 
     Ok(markdown_result)
 }
@@ -134,14 +159,13 @@ async fn store_raw_html_in_page_snapshot(
     .await?;
 
     let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    println!("Markdown result: {markdown_result:?}");
-    println!("Markdown result: {markdown_result:?}");
+    // println!("Markdown result: {markdown_result:?}");
 
     Ok(result)
 }
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
     let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
-    println!("Outcome: {outcome:?}");
+    // println!("Outcome: {outcome:?}");
     Ok(())
 }
