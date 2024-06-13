@@ -86,7 +86,7 @@ async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
 fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     let mut raw_html_cursor = std::io::Cursor::new(raw_html);
     let article = extractor::extract(&mut raw_html_cursor, url)?;
-    Ok(article.text)
+    Ok(article.content)
 }
 
 async fn store_markdown(
