@@ -133,7 +133,7 @@ async fn store_markdown(
 
     let category = generate_categories(&markdown_content).await?;
     let category_result = store_category(pool, markdown_result.markdown_id, &category).await?;
-    println!("Category result: {:?}", category_result);
+    println!("Category result: {category_result:?}");
 
     Ok(markdown_result)
 }
