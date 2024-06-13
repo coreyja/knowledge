@@ -6,14 +6,12 @@ async fn generate_openai_response(prompt: &str, max_tokens: u64) -> Result<Strin
     let api_key = env::var("OPEN_AI_API_KEY").expect("OPEN_AI_API_KEY must be set");
     openai::set_key(api_key);
 
-    let messages = vec![
-        ChatCompletionMessage {
-            role: ChatCompletionMessageRole::User,
-            content: Some(prompt.to_string()),
-            name: None,
-            function_call: None,
-        },
-    ];
+    let messages = vec![ChatCompletionMessage {
+        role: ChatCompletionMessageRole::User,
+        content: Some(prompt.to_string()),
+        name: None,
+        function_call: None,
+    }];
     let request = ChatCompletionBuilder::default()
         .model("gpt-4o".to_string())
         .messages(messages)
@@ -38,6 +36,11 @@ pub async fn generate_summary(content: &str) -> Result<String> {
 pub async fn generate_categories(content: &str) -> Result<String> {
     let prompt = format!("Extract key topics or themes from the following article and genrate a two word unique category title. Do not exceed two words: {content}");
     let response = generate_openai_response(&prompt, 100).await?;
-    let category = response.split(',').next().unwrap_or_default().trim().to_string();
+    let category = response
+        .split(',')
+        .next()
+        .unwrap_or_default()
+        .trim()
+        .to_string();
     Ok(category)
 }

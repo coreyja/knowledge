@@ -8,9 +8,8 @@ pub use sqlx::PgPool;
 use url::Url;
 use uuid::Uuid;
 
-use crate::openai_utils::generate_summary;
 
-use crate::openai_utils::{generate_summary, generate_categories};
+use crate::openai_utils::{generate_categories, generate_summary};
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
