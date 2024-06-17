@@ -1,5 +1,6 @@
 use color_eyre::Result;
 use openai::chat::{ChatCompletionBuilder, ChatCompletionMessage, ChatCompletionMessageRole};
+use openai::embeddings::Embeddings;
 use std::env;
 
 async fn generate_openai_response(prompt: &str, max_tokens: u64) -> Result<String> {
@@ -44,4 +45,9 @@ pub async fn generate_categories(content: &str) -> Result<String> {
         .trim()
         .to_string();
     Ok(category)
+}
+
+pub async fn generate_embedding(text: &str) -> color_eyre::Result<Vec<f64>> {
+    let embedding = Embeddings::create("text-embedding-ada-002", vec![text], "user-id").await?;
+    Ok(embedding.data[0].vec.clone())
 }
