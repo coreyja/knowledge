@@ -5,6 +5,7 @@ use cja::app_state::{self, AppState as AS};
 use cron::run_cron;
 use db::setup_db_pool;
 use miette::IntoDiagnostic;
+use tracing::info;
 
 #[derive(Clone, Debug)]
 struct AppState {
@@ -36,7 +37,18 @@ async fn main() -> miette::Result<()> {
         cookie_key,
     };
 
-    run_cron(app_state).await.unwrap();
+    info!("Spawning Tasks");
+    let mut futures = vec![
+        // tokio::spawn(run_server(routes(app_state.clone()))),
+        tokio::spawn(cja::jobs::worker::job_worker(app_state.clone(), jobs::Jobs)),
+    ];
+    if std::env::var("CRON_DISABLED").unwrap_or_else(|_| "false".to_string()) != "true" {
+        info!("Cron Enabled");
+        futures.push(tokio::spawn(cron::run_cron(app_state.clone())));
+    }
+    info!("Tasks Spawned");
+
+    futures::future::try_join_all(futures).await.into_diagnostic()?;
 
     Ok(())
 }
