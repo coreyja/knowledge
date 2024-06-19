@@ -57,9 +57,41 @@ async fn main() -> miette::Result<()> {
 fn routes(app_state: AppState) -> axum::Router {
     axum::Router::new()
         .route("/", get(handler))
+        .route("/new", get(handler2))
         .with_state(app_state)
 }
 
-async fn handler() -> axum::response::Html<&'static str> {
-    axum::response::Html("<h1>Hello, World!</h1>")
+fn button() -> maud::Markup {
+    maud::html! {
+        button { "Click me!" }
+    }
+}
+
+async fn handler() -> maud::Markup {
+    template(&maud::html! {
+        h1 { "Hello, World!" }
+        (button())
+    })
+}
+
+async fn handler2() -> maud::Markup {
+    template(&maud::html! {
+        h1."text-red-500" { "Different Page" }
+
+        (button())
+    })
+}
+
+fn template(inner: &maud::Markup) -> maud::Markup {
+    maud::html! {
+        head {
+            meta charset="UTF-8";
+            meta name="viewport" content="width=device-width, initial-scale=1.0";
+            script src="https://cdn.tailwindcss.com" {}
+        }
+
+        body {
+            (inner)
+        }
+    }
 }

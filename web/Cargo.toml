@@ -17,6 +17,7 @@ miette = { version = "5.7", features = ["fancy"] }
 tracing.workspace = true
 futures = "0.3.30"
 axum = "0.7.5"
+maud = { version = "0.26.0", features = ["axum"] }
 
 [lints]
 workspace = true
