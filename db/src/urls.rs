@@ -8,7 +8,7 @@ pub use sqlx::PgPool;
 use url::Url;
 use uuid::Uuid;
 
-use crate::openai_utils::generate_summary;
+use crate::openai_utils::{generate_categories, generate_summary};
 
 #[derive(sqlx::FromRow, Debug)]
 pub struct Page {
@@ -38,6 +38,12 @@ pub struct Markdown {
     pub markdown_id: Uuid,
     pub title: Option<String>,
     pub content_md: String,
+}
+
+#[derive(sqlx::FromRow, Debug)]
+pub struct Category {
+    pub markdown_id: Uuid,
+    pub category: Option<String>,
 }
 
 pub async fn add_url(
@@ -89,6 +95,23 @@ fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     Ok(article.content)
 }
 
+async fn store_category(
+    pool: &PgPool,
+    markdown_id: Uuid,
+    category: &str,
+) -> color_eyre::Result<Category> {
+    let result = sqlx::query_as!(
+        Category,
+        "INSERT INTO Category (markdown_id, category) VALUES ($1, $2) RETURNING *",
+        markdown_id,
+        category.to_string()
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(result)
+}
+
 async fn store_markdown(
     pool: &PgPool,
     page_snapshot_id: Uuid,
@@ -106,6 +129,10 @@ async fn store_markdown(
     )
     .fetch_one(pool)
     .await?;
+
+    let category = generate_categories(&markdown_content).await?;
+    let category_result = store_category(pool, markdown_result.markdown_id, &category).await?;
+    println!("Category result: {category_result:?}");
 
     Ok(markdown_result)
 }
