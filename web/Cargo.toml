@@ -16,6 +16,7 @@ serde = { version = "1.0.203", features = ["derive"] }
 miette = { version = "5.7", features = ["fancy"] }
 tracing.workspace = true
 futures = "0.3.30"
+axum = "0.7.5"
 
 [lints]
 workspace = true

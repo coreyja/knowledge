@@ -1,7 +1,8 @@
 mod cron;
 mod jobs;
 
-use cja::app_state::{self, AppState as AS};
+use axum::routing::get;
+use cja::{app_state::{self, AppState as AS}, server::run_server};
 use cron::run_cron;
 use db::setup_db_pool;
 use miette::IntoDiagnostic;
@@ -39,7 +40,7 @@ async fn main() -> miette::Result<()> {
 
     info!("Spawning Tasks");
     let mut futures = vec![
-        // tokio::spawn(run_server(routes(app_state.clone()))),
+        tokio::spawn(run_server(routes(app_state.clone()))),
         tokio::spawn(cja::jobs::worker::job_worker(app_state.clone(), jobs::Jobs)),
     ];
     if std::env::var("CRON_DISABLED").unwrap_or_else(|_| "false".to_string()) != "true" {
@@ -51,4 +52,14 @@ async fn main() -> miette::Result<()> {
     futures::future::try_join_all(futures).await.into_diagnostic()?;
 
     Ok(())
+}
+
+fn routes(app_state: AppState) -> axum::Router {
+    axum::Router::new()
+        .route("/", get(handler))
+        .with_state(app_state)
+}
+
+async fn handler() -> axum::response::Html<&'static str> {
+    axum::response::Html("<h1>Hello, World!</h1>")
 }
