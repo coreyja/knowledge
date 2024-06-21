@@ -6,17 +6,18 @@ use clap::Parser;
 
 #[allow(dead_code)]
 fn handle_command(
-    _args: KnowledgeArgs,
-    _db_pool: PgPool,
-) -> Result<(), Box<dyn std::error::Error>> {
-    Ok(())
+    _args: &KnowledgeArgs,
+    _db_pool: &PgPool,
+) {
+    println!("test");
 }
 
 #[cfg(test)]
 async fn run_test_command(args: &[&str]) -> Result<(), Box<dyn std::error::Error>> {
     let args = KnowledgeArgs::parse_from(args);
     let db_pool = db::setup_db_pool().await.unwrap();
-    handle_command(args, db_pool)
+    handle_command(&args, &db_pool);
+    Ok(())
 }
 
 #[tokio::test]

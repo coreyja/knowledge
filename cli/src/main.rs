@@ -40,11 +40,6 @@ enum Command {
     },
 }
 
-#[cfg(test)]
-mod tests {
-    include!("main_test.rs");
-}
-
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
     let args = KnowledgeArgs::parse();
@@ -77,4 +72,10 @@ async fn main() -> color_eyre::Result<()> {
     }
 
     Ok(())
+}
+
+
+#[cfg(test)]
+mod tests {
+    include!("main_test.rs");
 }
