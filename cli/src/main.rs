@@ -74,7 +74,6 @@ async fn main() -> color_eyre::Result<()> {
     Ok(())
 }
 
-
 #[cfg(test)]
 mod tests {
     include!("main_test.rs");

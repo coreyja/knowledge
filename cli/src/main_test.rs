@@ -5,10 +5,7 @@ use db::PgPool;
 use clap::Parser;
 
 #[allow(dead_code)]
-fn handle_command(
-    _args: &KnowledgeArgs,
-    _db_pool: &PgPool,
-) {
+fn handle_command(_args: &KnowledgeArgs, _db_pool: &PgPool) {
     println!("test");
 }
 
