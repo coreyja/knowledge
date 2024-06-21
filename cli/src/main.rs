@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 
 mod add_url;
+mod main_test;
 use add_url::append_url;
 
 mod auth;
@@ -37,6 +38,11 @@ enum Command {
         #[arg(short, long)]
         allow_existing: bool,
     },
+}
+
+#[cfg(test)]
+mod tests {
+    include!("main_test.rs");
 }
 
 #[tokio::main]
