@@ -1,11 +1,11 @@
 use axum::{
     body::Body,
     extract::FromRequestParts,
-    http::{self, header},
+    http::{self},
     response::{IntoResponse, Response},
 };
 use cja::{app_state::AppState as _, tower_cookies::Cookies};
-use serde::{Deserialize, Serialize};
+
 use uuid::Uuid;
 
 use crate::AppState;

@@ -5,7 +5,7 @@ use axum::{
     Form,
 };
 use cja::app_state::AppState as _;
-use color_eyre::owo_colors::colors::Red;
+
 use thiserror::Error;
 
 pub use db::users::User;

@@ -7,11 +7,10 @@ use axum::{
     response::{IntoResponse as _, Response},
     routing::{get, post},
 };
-use cja::{app_state::AppState as AS, server::run_server, tower_cookies::CookieManagerLayer};
+use cja::{app_state::AppState as AS, server::run_server};
 use db::{setup_db_pool, users::User};
 use miette::IntoDiagnostic;
-use sessions::Session;
-use tokio::net::{unix::SocketAddr, TcpListener};
+
 use tracing::info;
 
 #[derive(Clone, Debug)]
