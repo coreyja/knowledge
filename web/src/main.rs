@@ -85,10 +85,8 @@ fn routes(app_state: AppState) -> axum::Router {
         .route("/", get(home))
         .route("/hello", get(landing))
         .route("/dashboard", get(user_dashboard))
-        .route("/login", get(users::login::get))
-        .route("/login", post(users::login::post))
-        .route("/signup", get(users::signup::get))
-        .route("/signup", post(users::signup::post))
+        .route("/login", get(users::login::get).post(users::login::post))
+        .route("/signup", get(users::signup::get).post(users::signup::post))
         .route("/logout", get(users::login::logout))
         .with_state(app_state)
 }
@@ -110,7 +108,7 @@ async fn landing(t: Template) -> RenderedTemplate {
     })
 }
 
-async fn user_dashboard(t: Template, user: users::User) -> RenderedTemplate {
+async fn user_dashboard(t: Template, user: User) -> RenderedTemplate {
     t.render(maud::html! {
         h1 { "Dashboard" }
         p { "Welcome, " (user.user_name) }
