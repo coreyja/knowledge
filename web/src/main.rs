@@ -1,20 +1,18 @@
 mod cron;
 mod jobs;
 mod sessions;
+mod templates;
 mod users;
 
-use std::collections::HashMap;
-
 use axum::{
-    extract::{FromRequestParts, Query},
     response::{IntoResponse, Response},
-    routing::{get, post},
+    routing::get,
 };
 use cja::{app_state::AppState as AS, server::run_server};
 use db::{setup_db_pool, users::User};
 use miette::IntoDiagnostic;
 
-use sqlx::query;
+use templates::{Template, TemplatedPage};
 use tracing::info;
 
 #[derive(Clone, Debug)]
@@ -98,7 +96,7 @@ async fn home(t: Template, user: Option<User>) -> Response {
     }
 }
 
-async fn landing(t: Template) -> RenderedTemplate {
+async fn landing(t: Template) -> TemplatedPage {
     t.render(maud::html! {
         h1 { "Knowledge" }
         h2 { "A cool app that needs a new name" }
@@ -108,82 +106,11 @@ async fn landing(t: Template) -> RenderedTemplate {
     })
 }
 
-async fn user_dashboard(t: Template, user: User) -> RenderedTemplate {
+async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
     t.render(maud::html! {
         h1 { "Dashboard" }
         p { "Welcome, " (user.user_name) }
 
         a href="/logout" { "Logout" }
     })
-}
-
-struct Flash {
-    error: Option<String>,
-}
-
-#[async_trait::async_trait]
-impl FromRequestParts<AppState> for Flash {
-    type Rejection = ();
-
-    async fn from_request_parts(
-        parts: &mut axum::http::request::Parts,
-        _state: &AppState,
-    ) -> Result<Self, Self::Rejection> {
-        let Query(query) = Query::<HashMap<String, String>>::from_request_parts(parts, _state)
-            .await
-            .unwrap();
-        let error = query.get("flash[error]").cloned();
-
-        Ok(Flash { error })
-    }
-}
-
-struct Template {
-    flash: Flash,
-}
-
-#[async_trait::async_trait]
-impl FromRequestParts<AppState> for Template {
-    type Rejection = ();
-
-    async fn from_request_parts(
-        parts: &mut axum::http::request::Parts,
-        state: &AppState,
-    ) -> Result<Self, Self::Rejection> {
-        let flash = Flash::from_request_parts(parts, state).await.unwrap();
-
-        Ok(Template { flash })
-    }
-}
-
-impl Template {
-    fn render(&self, inner: maud::Markup) -> RenderedTemplate {
-        let html = maud::html! {
-            head {
-                meta charset="UTF-8";
-                meta name="viewport" content="width=device-width, initial-scale=1.0";
-                script src="https://cdn.tailwindcss.com" {}
-            }
-
-            body {
-                @if let Some(error) = &self.flash.error {
-                    p class="color-red-500" { (error) }
-                }
-                (inner)
-            }
-        };
-
-        RenderedTemplate { html }
-    }
-}
-
-struct RenderedTemplate {
-    html: maud::Markup,
-}
-
-impl IntoResponse for RenderedTemplate {
-    fn into_response(self) -> Response {
-        let html = self.html.into_string();
-        axum::response::Html(html).into_response()
-    }
 }
