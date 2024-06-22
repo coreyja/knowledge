@@ -11,7 +11,8 @@ use uuid::Uuid;
 use crate::AppState;
 
 #[derive(Debug)]
-pub struct DBSession {
+pub struct Session {
+    #[allow(clippy::struct_field_names)]
     pub session_id: Uuid,
     pub user_id: Option<Uuid>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
@@ -19,13 +20,13 @@ pub struct DBSession {
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
-impl DBSession {
+impl Session {
     async fn create(state: &AppState, cookies: &Cookies) -> Result<Self, SessionError> {
         let session_id = Uuid::new_v4();
         let expires_at = chrono::Utc::now() + chrono::Duration::days(7);
 
         let session = sqlx::query_as!(
-            DBSession,
+            Session,
             r"
       INSERT INTO Sessions (session_id, expires_at)
       VALUES ($1, $2)
@@ -61,7 +62,7 @@ impl IntoResponse for SessionError {
 }
 
 #[async_trait::async_trait]
-impl FromRequestParts<AppState> for DBSession {
+impl FromRequestParts<AppState> for Session {
     type Rejection = SessionError;
 
     async fn from_request_parts(
@@ -77,16 +78,16 @@ impl FromRequestParts<AppState> for DBSession {
         let session_cookie = private.get("session_id");
 
         let Some(session_cookie) = session_cookie else {
-            return DBSession::create(state, &cookies).await;
+            return Session::create(state, &cookies).await;
         };
 
         let session_id = session_cookie.value().to_string();
         let Ok(session_id) = uuid::Uuid::parse_str(&session_id) else {
-            return DBSession::create(state, &cookies).await;
+            return Session::create(state, &cookies).await;
         };
 
         let Ok(session) = sqlx::query_as!(
-            DBSession,
+            Session,
             r"
         SELECT *
         FROM Sessions
@@ -97,13 +98,13 @@ impl FromRequestParts<AppState> for DBSession {
         .fetch_optional(state.db())
         .await
         else {
-            return DBSession::create(state, &cookies).await;
+            return Session::create(state, &cookies).await;
         };
 
         if let Some(session) = session {
             Ok(session)
         } else {
-            DBSession::create(state, &cookies).await
+            Session::create(state, &cookies).await
         }
     }
 }

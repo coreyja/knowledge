@@ -6,7 +6,7 @@ use axum::routing::get;
 use cja::{app_state::AppState as AS, server::run_server, tower_cookies::CookieManagerLayer};
 use db::setup_db_pool;
 use miette::IntoDiagnostic;
-use sessions::DBSession;
+use sessions::Session;
 use tokio::net::{unix::SocketAddr, TcpListener};
 use tracing::info;
 
@@ -93,7 +93,7 @@ async fn handler() -> maud::Markup {
     })
 }
 
-async fn handler2(_: DBSession) -> maud::Markup {
+async fn handler2(_: Session) -> maud::Markup {
     template(&maud::html! {
         h1."text-red-500" { "Different Page" }
 
