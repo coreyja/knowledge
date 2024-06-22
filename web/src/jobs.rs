@@ -7,7 +7,7 @@ pub struct HelloJob;
 
 #[async_trait::async_trait]
 impl Job<AppState> for HelloJob {
-  const NAME: &'static str = "HelloJob";
+    const NAME: &'static str = "HelloJob";
 
     async fn run(&self, _app_state: AppState) -> miette::Result<()> {
         println!("Hello, world!");
