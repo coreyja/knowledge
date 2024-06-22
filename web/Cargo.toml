@@ -16,11 +16,12 @@ serde = { version = "1.0.203", features = ["derive"] }
 miette = { version = "5.7", features = ["fancy"] }
 tracing.workspace = true
 futures = "0.3.30"
-axum = "0.7.5"
+axum = { version = "0.7.5", features = ["macros"] }
 maud = { version = "0.26.0", features = ["axum"] }
 tower-http = "0.5.2"
 uuid.workspace = true
 chrono.workspace = true
+thiserror = "1.0.61"
 
 [lints]
 workspace = true

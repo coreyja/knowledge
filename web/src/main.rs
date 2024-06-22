@@ -1,10 +1,14 @@
 mod cron;
 mod jobs;
 mod sessions;
+mod users;
 
-use axum::routing::get;
+use axum::{
+    response::{IntoResponse as _, Response},
+    routing::{get, post},
+};
 use cja::{app_state::AppState as AS, server::run_server, tower_cookies::CookieManagerLayer};
-use db::setup_db_pool;
+use db::{setup_db_pool, users::User};
 use miette::IntoDiagnostic;
 use sessions::Session;
 use tokio::net::{unix::SocketAddr, TcpListener};
@@ -75,29 +79,35 @@ async fn _main() -> miette::Result<()> {
 
 fn routes(app_state: AppState) -> axum::Router {
     axum::Router::new()
-        .route("/", get(handler))
-        .route("/new", get(handler2))
+        .route("/", get(home))
+        .route("/hello", get(landing))
+        .route("/dashboard", get(user_dashboard))
+        .route("/login", get(users::login_get))
+        .route("/login", post(users::login_post))
         .with_state(app_state)
 }
 
-fn button() -> maud::Markup {
-    maud::html! {
-        button { "Click me!" }
+async fn home(user: Option<User>) -> Response {
+    match user {
+        Some(user) => user_dashboard(user).await.into_response(),
+        None => landing().await.into_response(),
     }
 }
 
-async fn handler() -> maud::Markup {
+async fn landing() -> maud::Markup {
     template(&maud::html! {
-        h1 { "Hello, World!" }
-        (button())
+        h1 { "Knowledge" }
+        h2 { "A cool app that needs a new name" }
+
+        p { "Welcome to Knowledge! Please log in." }
+        a href="/login" { "Login" }
     })
 }
 
-async fn handler2(_: Session) -> maud::Markup {
+async fn user_dashboard(user: users::User) -> maud::Markup {
     template(&maud::html! {
-        h1."text-red-500" { "Different Page" }
-
-        (button())
+        h1 { "Dashboard" }
+        p { "Welcome, " (user.user_name) }
     })
 }
 
