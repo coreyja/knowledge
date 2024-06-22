@@ -12,6 +12,7 @@ tokio = { version = "1", features = ["full"] }
 tracing = "0.1.40"
 url = "2.5.0"
 uuid = { version = "1.8.0", features = ["v4"] }
+chrono = { version = "0.4.23", default-features = false, features = ["serde"] }
 
 [workspace.lints.clippy]
 pedantic = "deny"

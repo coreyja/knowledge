@@ -1,10 +1,13 @@
 mod cron;
 mod jobs;
+mod sessions;
 
 use axum::routing::get;
-use cja::{app_state::AppState as AS, server::run_server};
+use cja::{app_state::AppState as AS, server::run_server, tower_cookies::CookieManagerLayer};
 use db::setup_db_pool;
 use miette::IntoDiagnostic;
+use sessions::DBSession;
+use tokio::net::{unix::SocketAddr, TcpListener};
 use tracing::info;
 
 #[derive(Clone, Debug)]
@@ -27,9 +30,22 @@ impl AS for AppState {
     }
 }
 
-#[tokio::main]
-async fn main() -> miette::Result<()> {
+fn main() -> miette::Result<()> {
+    let _sentry_guard = cja::setup::setup_sentry();
+
+    tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(4)
+        .enable_all()
+        .build()
+        .into_diagnostic()?
+        .block_on(async { _main().await })
+}
+
+async fn _main() -> miette::Result<()> {
+    cja::setup::setup_tracing("knowledge")?;
+
     let db_pool = setup_db_pool().await.unwrap(); // Fix this unwrap
+
     let cookie_key = cja::server::cookies::CookieKey::from_env_or_generate().unwrap();
 
     let app_state = AppState {
@@ -37,9 +53,11 @@ async fn main() -> miette::Result<()> {
         cookie_key,
     };
 
+    let app = routes(app_state.clone());
+
     info!("Spawning Tasks");
     let mut futures = vec![
-        tokio::spawn(run_server(routes(app_state.clone()))),
+        tokio::spawn(run_server(app)),
         tokio::spawn(cja::jobs::worker::job_worker(app_state.clone(), jobs::Jobs)),
     ];
     if std::env::var("CRON_DISABLED").unwrap_or_else(|_| "false".to_string()) != "true" {
@@ -75,7 +93,7 @@ async fn handler() -> maud::Markup {
     })
 }
 
-async fn handler2() -> maud::Markup {
+async fn handler2(_: DBSession) -> maud::Markup {
     template(&maud::html! {
         h1."text-red-500" { "Different Page" }
 
