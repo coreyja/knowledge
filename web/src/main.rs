@@ -3,10 +3,9 @@ mod jobs;
 
 use axum::routing::get;
 use cja::{
-    app_state::{self, AppState as AS},
+    app_state::{AppState as AS},
     server::run_server,
 };
-use cron::run_cron;
 use db::setup_db_pool;
 use miette::IntoDiagnostic;
 use tracing::info;
