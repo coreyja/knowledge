@@ -1,6 +1,9 @@
+
 [workspace]
 members = ["db", "cli", "web"]
 resolver = "2"
+default-members = ["web"]
+
 
 [workspace.dependencies]
 color-eyre = "0.6.3"
