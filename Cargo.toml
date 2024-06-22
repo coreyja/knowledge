@@ -18,3 +18,4 @@ chrono = { version = "0.4.23", default-features = false, features = ["serde"] }
 pedantic = "deny"
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
+items_after_statements = "allow"

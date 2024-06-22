@@ -1,8 +1,7 @@
 use axum::{
-    extract::{FromRequestParts, State},
+    extract::FromRequestParts,
     http::request::Parts,
-    response::{IntoResponse, Redirect, Response},
-    Form,
+    response::{IntoResponse, Response},
 };
 use cja::app_state::AppState as _;
 
@@ -14,6 +13,9 @@ use crate::{
     sessions::{Session, SessionError},
     AppState,
 };
+
+pub mod login;
+pub mod signup;
 
 #[derive(Error, Debug)]
 pub enum ExtractUserError {
@@ -68,52 +70,4 @@ impl FromRequestParts<AppState> for User {
 
         Ok(user)
     }
-}
-
-pub async fn login_get() -> impl IntoResponse {
-    maud::html! {
-        form method="post" action="/login" {
-            input type="text" name="username" placeholder="Username";
-            input type="password" name="password" placeholder="Password";
-            input type="submit" value="Login";
-        }
-    }
-}
-
-#[derive(serde::Deserialize)]
-pub struct LoginFromData {
-    username: String,
-    password: String,
-}
-
-// #[axum::debug_handler(state = AppState)]
-pub async fn login_post(
-    session: Session,
-    State(state): State<AppState>,
-    form: Form<LoginFromData>,
-) -> Result<Redirect, Redirect> {
-    let user = sqlx::query_as!(
-        User,
-        r#"
-        SELECT *
-        FROM Users
-        WHERE user_name = $1
-        "#,
-        form.username
-    )
-    .fetch_optional(state.db())
-    .await
-    .map_err(|_| Redirect::to("/login"))?
-    .ok_or_else(|| Redirect::to("/login"))?;
-
-    sqlx::query!(
-        "UPDATE Sessions SET user_id = $1 WHERE session_id = $2",
-        user.user_id,
-        session.session_id
-    )
-    .execute(state.db())
-    .await
-    .map_err(|_| Redirect::to("/login"))?;
-
-    Ok(Redirect::to("/dashboard"))
 }

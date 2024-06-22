@@ -17,11 +17,12 @@ miette = { version = "5.7", features = ["fancy"] }
 tracing.workspace = true
 futures = "0.3.30"
 axum = { version = "0.7.5", features = ["macros"] }
-maud = { version = "0.26.0", features = ["axum"] }
+maud = { version = "0.26.0" }
 tower-http = "0.5.2"
 uuid.workspace = true
 chrono.workspace = true
 thiserror = "1.0.61"
+password-auth = "1.0.0"
 
 [lints]
 workspace = true

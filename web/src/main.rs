@@ -3,14 +3,18 @@ mod jobs;
 mod sessions;
 mod users;
 
+use std::collections::HashMap;
+
 use axum::{
-    response::{IntoResponse as _, Response},
+    extract::{FromRequestParts, Query},
+    response::{IntoResponse, Response},
     routing::{get, post},
 };
 use cja::{app_state::AppState as AS, server::run_server};
 use db::{setup_db_pool, users::User};
 use miette::IntoDiagnostic;
 
+use sqlx::query;
 use tracing::info;
 
 #[derive(Clone, Debug)]
@@ -81,20 +85,23 @@ fn routes(app_state: AppState) -> axum::Router {
         .route("/", get(home))
         .route("/hello", get(landing))
         .route("/dashboard", get(user_dashboard))
-        .route("/login", get(users::login_get))
-        .route("/login", post(users::login_post))
+        .route("/login", get(users::login::get))
+        .route("/login", post(users::login::post))
+        .route("/signup", get(users::signup::get))
+        .route("/signup", post(users::signup::post))
+        .route("/logout", get(users::login::logout))
         .with_state(app_state)
 }
 
-async fn home(user: Option<User>) -> Response {
+async fn home(t: Template, user: Option<User>) -> Response {
     match user {
-        Some(user) => user_dashboard(user).await.into_response(),
-        None => landing().await.into_response(),
+        Some(user) => user_dashboard(t, user).await.into_response(),
+        None => landing(t).await.into_response(),
     }
 }
 
-async fn landing() -> maud::Markup {
-    template(&maud::html! {
+async fn landing(t: Template) -> RenderedTemplate {
+    t.render(maud::html! {
         h1 { "Knowledge" }
         h2 { "A cool app that needs a new name" }
 
@@ -103,23 +110,82 @@ async fn landing() -> maud::Markup {
     })
 }
 
-async fn user_dashboard(user: users::User) -> maud::Markup {
-    template(&maud::html! {
+async fn user_dashboard(t: Template, user: users::User) -> RenderedTemplate {
+    t.render(maud::html! {
         h1 { "Dashboard" }
         p { "Welcome, " (user.user_name) }
+
+        a href="/logout" { "Logout" }
     })
 }
 
-fn template(inner: &maud::Markup) -> maud::Markup {
-    maud::html! {
-        head {
-            meta charset="UTF-8";
-            meta name="viewport" content="width=device-width, initial-scale=1.0";
-            script src="https://cdn.tailwindcss.com" {}
-        }
+struct Flash {
+    error: Option<String>,
+}
 
-        body {
-            (inner)
-        }
+#[async_trait::async_trait]
+impl FromRequestParts<AppState> for Flash {
+    type Rejection = ();
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        _state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
+        let Query(query) = Query::<HashMap<String, String>>::from_request_parts(parts, _state)
+            .await
+            .unwrap();
+        let error = query.get("flash[error]").cloned();
+
+        Ok(Flash { error })
+    }
+}
+
+struct Template {
+    flash: Flash,
+}
+
+#[async_trait::async_trait]
+impl FromRequestParts<AppState> for Template {
+    type Rejection = ();
+
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
+        let flash = Flash::from_request_parts(parts, state).await.unwrap();
+
+        Ok(Template { flash })
+    }
+}
+
+impl Template {
+    fn render(&self, inner: maud::Markup) -> RenderedTemplate {
+        let html = maud::html! {
+            head {
+                meta charset="UTF-8";
+                meta name="viewport" content="width=device-width, initial-scale=1.0";
+                script src="https://cdn.tailwindcss.com" {}
+            }
+
+            body {
+                @if let Some(error) = &self.flash.error {
+                    p class="color-red-500" { (error) }
+                }
+                (inner)
+            }
+        };
+
+        RenderedTemplate { html }
+    }
+}
+
+struct RenderedTemplate {
+    html: maud::Markup,
+}
+
+impl IntoResponse for RenderedTemplate {
+    fn into_response(self) -> Response {
+        let html = self.html.into_string();
+        axum::response::Html(html).into_response()
     }
 }
