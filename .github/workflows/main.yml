@@ -1,0 +1,19 @@
+name: CI / CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  tests:
+    uses: ./.github/workflows/rust_tests.yml
+    name: Rust Tests
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs:
+      - tests
+    uses: ./.github/workflows/deploy.yml
+    name: Deploy

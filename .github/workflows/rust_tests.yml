@@ -1,10 +1,7 @@
 name: Rust Tests
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_call:
 
 jobs:
   sqlx-prepare-check:
