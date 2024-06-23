@@ -11,6 +11,7 @@ use uuid::Uuid;
 use crate::AppState;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct Session {
     #[allow(clippy::struct_field_names)]
     pub session_id: Uuid,
@@ -28,10 +29,10 @@ impl Session {
         let session = sqlx::query_as!(
             Session,
             r"
-      INSERT INTO Sessions (session_id, expires_at)
-      VALUES ($1, $2)
-      RETURNING *
-      ",
+            INSERT INTO Sessions (session_id, expires_at)
+            VALUES ($1, $2)
+            RETURNING *
+            ",
             session_id,
             expires_at
         )
@@ -89,10 +90,12 @@ impl FromRequestParts<AppState> for Session {
         let Ok(session) = sqlx::query_as!(
             Session,
             r"
-        SELECT *
-        FROM Sessions
-        WHERE session_id = $1
-        ",
+            SELECT *
+            FROM Sessions
+            WHERE
+                session_id = $1 AND
+                expires_at > NOW()
+            ",
             session_id
         )
         .fetch_optional(state.db())
