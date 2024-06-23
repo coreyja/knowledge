@@ -1,18 +1,15 @@
 mod cron;
 mod jobs;
+mod pages;
+mod routes;
 mod sessions;
 mod templates;
 mod users;
 
-use axum::{
-    response::{IntoResponse, Response},
-    routing::get,
-};
 use cja::{app_state::AppState as AS, server::run_server};
-use db::{setup_db_pool, users::User};
+use db::setup_db_pool;
 use miette::IntoDiagnostic;
 
-use templates::{Template, TemplatedPage};
 use tracing::info;
 
 #[derive(Clone, Debug)]
@@ -58,7 +55,7 @@ async fn _main() -> miette::Result<()> {
         cookie_key,
     };
 
-    let app = routes(app_state.clone());
+    let app = routes::routes(app_state.clone());
 
     info!("Spawning Tasks");
     let mut futures = vec![
@@ -76,41 +73,4 @@ async fn _main() -> miette::Result<()> {
         .into_diagnostic()?;
 
     Ok(())
-}
-
-fn routes(app_state: AppState) -> axum::Router {
-    axum::Router::new()
-        .route("/", get(home))
-        .route("/hello", get(landing))
-        .route("/dashboard", get(user_dashboard))
-        .route("/login", get(users::login::get).post(users::login::post))
-        .route("/signup", get(users::signup::get).post(users::signup::post))
-        .route("/logout", get(users::login::logout))
-        .with_state(app_state)
-}
-
-async fn home(t: Template, user: Option<User>) -> Response {
-    match user {
-        Some(user) => user_dashboard(t, user).await.into_response(),
-        None => landing(t).await.into_response(),
-    }
-}
-
-async fn landing(t: Template) -> TemplatedPage {
-    t.render(maud::html! {
-        h1 { "Knowledge" }
-        h2 { "A cool app that needs a new name" }
-
-        p { "Welcome to Knowledge! Please log in." }
-        a href="/login" { "Login" }
-    })
-}
-
-async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
-    t.render(maud::html! {
-        h1 { "Dashboard" }
-        p { "Welcome, " (user.user_name) }
-
-        a href="/logout" { "Logout" }
-    })
 }

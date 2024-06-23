@@ -7,7 +7,7 @@ use cja::app_state::AppState as _;
 use db::users::User;
 use password_auth::generate_hash;
 
-use crate::{sessions::Session, AppState, Template};
+use crate::{sessions::Session, templates::Template, AppState};
 
 pub async fn get(t: Template) -> impl IntoResponse {
     t.render(maud::html! {

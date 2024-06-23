@@ -8,7 +8,7 @@ use cja::app_state::AppState as _;
 use db::users::User;
 use password_auth::verify_password;
 
-use crate::{sessions::Session, AppState, Template};
+use crate::{sessions::Session, templates::Template, AppState};
 
 pub async fn get(t: Template) -> impl IntoResponse {
     t.render(maud::html! {
@@ -26,7 +26,7 @@ pub struct FromData {
     password: String,
 }
 
-// #[axum::debug_handler(state = AppState)]
+#[axum::debug_handler(state = AppState)]
 pub async fn post(
     session: Session,
     State(state): State<AppState>,
