@@ -3,7 +3,10 @@ use axum::{
     response::{IntoResponse, Redirect},
     Form,
 };
-use cja::app_state::AppState as _;
+use cja::{
+    app_state::AppState as _,
+    tower_cookies::{Cookie, Cookies},
+};
 
 use db::users::User;
 use password_auth::verify_password;
@@ -75,7 +78,7 @@ pub async fn post(
     };
 
     sqlx::query!(
-        "UPDATE Sessions SET user_id = $1 WHERE session_id = $2",
+        "UPDATE Sessions SET user_id = $1, updated_at = now() WHERE session_id = $2",
         user.user_id,
         session.session_id
     )
@@ -86,9 +89,13 @@ pub async fn post(
     Ok(Redirect::to("/dashboard"))
 }
 
-pub async fn logout(session: Session, State(state): State<AppState>) -> Redirect {
+pub async fn logout(session: Session, State(state): State<AppState>, cookies: Cookies) -> Redirect {
+    let private = cookies.private(state.cookie_key());
+    let cookie = Cookie::build("session_id").build();
+    private.remove(cookie);
+
     sqlx::query!(
-        "UPDATE Sessions SET user_id = NULL WHERE session_id = $1",
+        "UPDATE Sessions SET logged_out_at = now(), updated_at = now() WHERE session_id = $1",
         session.session_id
     )
     .execute(state.db())

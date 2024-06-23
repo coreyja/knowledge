@@ -17,6 +17,7 @@ pub struct Session {
     pub session_id: Uuid,
     pub user_id: Option<Uuid>,
     pub expires_at: chrono::DateTime<chrono::Utc>,
+    pub logged_out_at: Option<chrono::DateTime<chrono::Utc>>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
@@ -94,7 +95,8 @@ impl FromRequestParts<AppState> for Session {
             FROM Sessions
             WHERE
                 session_id = $1 AND
-                expires_at > NOW()
+                expires_at > NOW () AND
+                logged_out_at IS NULL
             ",
             session_id
         )

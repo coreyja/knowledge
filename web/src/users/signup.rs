@@ -59,7 +59,7 @@ pub async fn post(
     .unwrap();
 
     sqlx::query!(
-        "UPDATE Sessions SET user_id = $1 WHERE session_id = $2",
+        "UPDATE Sessions SET user_id = $1, updated_at = now() WHERE session_id = $2",
         user.user_id,
         session.session_id
     )
