@@ -9,7 +9,7 @@ use cja::{
 };
 
 use db::users::User;
-use miette::IntoDiagnostic;
+
 use password_auth::verify_password;
 
 use crate::{sessions::Session, templates::Template, AppState, WebResult};
@@ -104,8 +104,7 @@ pub async fn logout(
         session.session_id
     )
     .execute(state.db())
-    .await
-    ?;
+    .await?;
 
     Ok(Redirect::to("/"))
 }

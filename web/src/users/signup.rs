@@ -5,7 +5,7 @@ use axum::{
 };
 use cja::app_state::AppState as _;
 use db::users::User;
-use miette::IntoDiagnostic;
+
 use password_auth::generate_hash;
 
 use crate::{sessions::Session, templates::Template, AppState, WebResult};
