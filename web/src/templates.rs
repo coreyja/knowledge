@@ -6,7 +6,7 @@ use axum::{
 };
 use maud::PreEscaped;
 
-use crate::AppState;
+use crate::{err, AppState};
 
 pub struct Flash {
     error: Option<String>,
@@ -14,15 +14,14 @@ pub struct Flash {
 
 #[async_trait::async_trait]
 impl FromRequestParts<AppState> for Flash {
-    type Rejection = ();
+    type Rejection = err::Error;
 
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
         _state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-        let Query(query) = Query::<HashMap<String, String>>::from_request_parts(parts, _state)
-            .await
-            .unwrap();
+        let Query(query) =
+            Query::<HashMap<String, String>>::from_request_parts(parts, _state).await?;
         let error = query.get("flash[error]").cloned();
 
         Ok(Flash { error })
@@ -35,13 +34,13 @@ pub struct Template {
 
 #[async_trait::async_trait]
 impl FromRequestParts<AppState> for Template {
-    type Rejection = ();
+    type Rejection = err::Error;
 
     async fn from_request_parts(
         parts: &mut axum::http::request::Parts,
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
-        let flash = Flash::from_request_parts(parts, state).await.unwrap();
+        let flash = Flash::from_request_parts(parts, state).await?;
 
         Ok(Template { flash })
     }

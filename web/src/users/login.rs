@@ -9,9 +9,10 @@ use cja::{
 };
 
 use db::users::User;
+use miette::IntoDiagnostic;
 use password_auth::verify_password;
 
-use crate::{sessions::Session, templates::Template, AppState};
+use crate::{sessions::Session, templates::Template, AppState, WebResult};
 
 pub async fn get(t: Template) -> impl IntoResponse {
     t.render(maud::html! {
@@ -34,7 +35,7 @@ pub async fn post(
     session: Session,
     State(state): State<AppState>,
     form_data: Form<FromData>,
-) -> Result<Redirect, Redirect> {
+) -> WebResult<Redirect> {
     let potential_user = sqlx::query_as!(
         User,
         r#"
@@ -45,33 +46,34 @@ pub async fn post(
         form_data.username
     )
     .fetch_optional(state.db())
-    .await
-    .map_err(|_| Redirect::to("/login"))?
-    .ok_or_else(|| Redirect::to("/login"))?;
+    .await?;
 
-    let password_hash = potential_user
-        .password_hash
-        .as_ref()
-        .ok_or_else(|| Redirect::to("/login"))?;
+    let Some(potential_user) = potential_user else {
+        return Ok(Redirect::to("/login"));
+    };
+
+    let Some(password_hash) = potential_user.password_hash.as_ref() else {
+        return Ok(Redirect::to("/login"));
+    };
 
     let password_hash_to_verify = password_hash.to_string();
 
     let verify_password = tokio::task::spawn_blocking(move || {
         verify_password(&form_data.password, &password_hash_to_verify)
     })
-    .await
-    .unwrap();
+    .await?;
+
     let user = match verify_password {
         Ok(()) => potential_user,
         Err(password_auth::VerifyError::PasswordInvalid) => {
-            return Err(Redirect::to("/login?flash[error]=Invalid Password"));
+            return Ok(Redirect::to("/login?flash[error]=Invalid Password"));
         }
         Err(_) => {
             tracing::error!(
                 user_id = potential_user.user_id.to_string(),
                 "Password Hash Failed to parse",
             );
-            return Err(Redirect::to(
+            return Ok(Redirect::to(
                 "/login?flash[error]=Internal Error, Please try again. Team has been notified",
             ));
         }
@@ -83,13 +85,16 @@ pub async fn post(
         session.session_id
     )
     .execute(state.db())
-    .await
-    .map_err(|_| Redirect::to("/login"))?;
+    .await?;
 
     Ok(Redirect::to("/dashboard"))
 }
 
-pub async fn logout(session: Session, State(state): State<AppState>, cookies: Cookies) -> Redirect {
+pub async fn logout(
+    session: Session,
+    State(state): State<AppState>,
+    cookies: Cookies,
+) -> WebResult<Redirect> {
     let private = cookies.private(state.cookie_key());
     let cookie = Cookie::build("session_id").build();
     private.remove(cookie);
@@ -100,7 +105,7 @@ pub async fn logout(session: Session, State(state): State<AppState>, cookies: Co
     )
     .execute(state.db())
     .await
-    .unwrap();
+    ?;
 
-    Redirect::to("/")
+    Ok(Redirect::to("/"))
 }

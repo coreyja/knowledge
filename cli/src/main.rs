@@ -15,6 +15,7 @@ use sign_up::sign_up;
 mod display_user;
 use display_user::display_users;
 
+
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 struct KnowledgeArgs {

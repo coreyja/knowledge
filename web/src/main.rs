@@ -1,4 +1,5 @@
 mod cron;
+mod err;
 mod jobs;
 mod pages;
 mod routes;
@@ -11,6 +12,8 @@ use db::setup_db_pool;
 use miette::IntoDiagnostic;
 
 use tracing::info;
+
+type WebResult<T, E = err::Error> = Result<T, E>;
 
 #[derive(Clone, Debug)]
 struct AppState {
@@ -46,9 +49,11 @@ fn main() -> miette::Result<()> {
 async fn _main() -> miette::Result<()> {
     cja::setup::setup_tracing("knowledge")?;
 
-    let db_pool = setup_db_pool().await.unwrap(); // Fix this unwrap
+    let db_pool = setup_db_pool()
+        .await
+        .map_err(|e| miette::miette!("Setup DB Failed: {e}"))?;
 
-    let cookie_key = cja::server::cookies::CookieKey::from_env_or_generate().unwrap();
+    let cookie_key = cja::server::cookies::CookieKey::from_env_or_generate().into_diagnostic()?;
 
     let app_state = AppState {
         db: db_pool,
