@@ -53,7 +53,11 @@ pub async fn post(
     };
 
     let Some(password_hash) = potential_user.password_hash.as_ref() else {
-        return Ok(Redirect::to("/login"));
+        tracing::error!(
+            user_id = potential_user.user_id.to_string(),
+            "User has no password set"
+        );
+        return Ok(Redirect::to("/login?flash[error]=No password set for this user"));
     };
 
     let password_hash_to_verify = password_hash.to_string();
