@@ -6,7 +6,7 @@ use uuid::Uuid;
 pub struct User {
     pub user_id: Uuid,
     pub user_name: String,
-    pub password_hash: Option<String>,
+    pub password_hash: String,
 }
 
 pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<Uuid> {

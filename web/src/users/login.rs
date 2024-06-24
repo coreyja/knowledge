@@ -52,11 +52,7 @@ pub async fn post(
         return Ok(Redirect::to("/login"));
     };
 
-    let Some(password_hash) = potential_user.password_hash.as_ref() else {
-        return Ok(Redirect::to("/login"));
-    };
-
-    let password_hash_to_verify = password_hash.to_string();
+    let password_hash_to_verify = potential_user.password_hash.clone();
 
     let verify_password = tokio::task::spawn_blocking(move || {
         verify_password(&form_data.password, &password_hash_to_verify)
