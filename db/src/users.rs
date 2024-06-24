@@ -29,7 +29,8 @@ pub async fn get_user(pool: &PgPool) -> Result<Vec<User>> {
 
 pub async fn get_username_by_id(pool: &PgPool, user_id: Uuid) -> Result<String> {
     let record = sqlx::query!("SELECT user_name FROM Users WHERE user_id = $1", user_id)
-        .fetch_optional(pool)
+        .fetch_one(pool)
         .await?;
-    Ok(record.map(|r| r.user_name).unwrap_or_default())
+
+    Ok(record.user_name)
 }
