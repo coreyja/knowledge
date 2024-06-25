@@ -3,6 +3,7 @@ pub use sqlx::PgPool;
 use uuid::Uuid;
 
 #[derive(sqlx::FromRow)]
+#[derive(Clone)]
 pub struct User {
     pub user_id: Uuid,
     pub user_name: String,
