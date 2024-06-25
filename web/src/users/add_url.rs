@@ -25,7 +25,7 @@ pub async fn insert_article_handler(
     match add_url(&state.db, &url, user_id, &true).await {
         Ok(_) => Redirect::to("/dashboard"),
         Err(e) => {
-            eprintln!("Error adding URL: {:?}", e);
+            eprintln!("Error adding URL: {e:?}");
             Redirect::to("/dashboard?error=Could not add article")
         }
     }

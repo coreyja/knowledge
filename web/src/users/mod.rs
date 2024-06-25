@@ -14,9 +14,9 @@ use crate::{
     AppState,
 };
 
+pub mod add_url;
 pub mod login;
 pub mod signup;
-pub mod add_url;
 
 #[derive(Error, Debug)]
 pub enum ExtractUserError {
@@ -72,4 +72,3 @@ impl FromRequestParts<AppState> for User {
         Ok(user)
     }
 }
-
