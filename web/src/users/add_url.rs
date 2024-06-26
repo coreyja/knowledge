@@ -9,7 +9,7 @@ use crate::AppState;
 
 #[derive(Deserialize)]
 pub struct ArticleForm {
-    content: String,
+    url: String,
 }
 
 #[axum::debug_handler(state = AppState)]
@@ -18,7 +18,7 @@ pub async fn insert_article_handler(
     user: User,
     Form(form): Form<ArticleForm>,
 ) -> impl IntoResponse {
-    let url = form.content;
+    let url = form.url;
     let user_id = user.user_id;
 
     println!("inserting");
