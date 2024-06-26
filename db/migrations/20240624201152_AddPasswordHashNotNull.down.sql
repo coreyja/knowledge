@@ -1,2 +1,4 @@
-ALTER TABLE users 
-DROP COLUMN password_hash;
+ALTER TABLE users
+ALTER COLUMN password_hash
+SET
+  NOT NULL;
