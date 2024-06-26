@@ -1,6 +1,9 @@
+
 [workspace]
-members = ["db", "cli"]
+members = ["db", "cli", "web"]
 resolver = "2"
+default-members = ["web"]
+
 
 [workspace.dependencies]
 color-eyre = "0.6.3"
@@ -9,8 +12,10 @@ tokio = { version = "1", features = ["full"] }
 tracing = "0.1.40"
 url = "2.5.0"
 uuid = { version = "1.8.0", features = ["v4"] }
+chrono = { version = "0.4.23", default-features = false, features = ["serde"] }
 
 [workspace.lints.clippy]
 pedantic = "deny"
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
+items_after_statements = "allow"

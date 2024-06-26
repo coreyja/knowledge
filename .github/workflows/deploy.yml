@@ -1,0 +1,13 @@
+on:
+  workflow_call:
+
+jobs:
+  fly_deploy:
+    runs-on: ubuntu-latest
+    environment: Fly Production
+    steps:
+      - uses: actions/checkout@v3
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_DEPLOY_TOKEN }}

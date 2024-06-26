@@ -1,9 +1,7 @@
 name: Rust Tests
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
   pull_request:
 
 jobs:
@@ -40,7 +38,7 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Clippy
-        run: cargo clippy --all-targets
+        run: cargo clippy --all-targets --workspace
 
   tests:
     runs-on: ubuntu-latest

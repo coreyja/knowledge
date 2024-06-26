@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT user_id, user_name FROM Users",
+  "query": "\n            SELECT *\n            FROM Users\n            WHERE user_id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -12,15 +12,23 @@
         "ordinal": 1,
         "name": "user_name",
         "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "password_hash",
+        "type_info": "Text"
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Uuid"
+      ]
     },
     "nullable": [
+      false,
       false,
       false
     ]
   },
-  "hash": "1538f8ced8c8fadf8da72dc615f0df5d9e96cc8e4ff9c8d9af88505438859e0b"
+  "hash": "1b189b3e09b631177f27c6dbb605bda7be996af26e3858af3d3f63c0bbae409c"
 }

@@ -1,0 +1,17 @@
+name: CI / CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+    uses: ./.github/workflows/rust_tests.yml
+    name: Rust Tests
+
+  deploy:
+    needs:
+      - tests
+    uses: ./.github/workflows/deploy.yml
+    name: Deploy

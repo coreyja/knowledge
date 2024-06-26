@@ -6,6 +6,7 @@ use uuid::Uuid;
 pub struct User {
     pub user_id: Uuid,
     pub user_name: String,
+    pub password_hash: String,
 }
 
 pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<Uuid> {
@@ -20,7 +21,7 @@ pub async fn create_user(pool: &PgPool, user_name: &str) -> color_eyre::Result<U
 }
 
 pub async fn get_user(pool: &PgPool) -> Result<Vec<User>> {
-    let users = sqlx::query_as!(User, "SELECT user_id, user_name FROM Users")
+    let users = sqlx::query_as!(User, "SELECT * FROM Users")
         .fetch_all(pool)
         .await?;
     Ok(users)
@@ -30,5 +31,6 @@ pub async fn get_username_by_id(pool: &PgPool, user_id: Uuid) -> Result<Option<S
     let record = sqlx::query!("SELECT user_name FROM Users WHERE user_id = $1", user_id)
         .fetch_optional(pool)
         .await?;
+
     Ok(record.map(|r| r.user_name))
 }

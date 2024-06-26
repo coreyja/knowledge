@@ -1,0 +1,9 @@
+-- Add migration script here
+CREATE TABLE
+  Sessions (
+    session_id UUID PRIMARY KEY,
+    user_id UUID REFERENCES Users (user_id) NULL,
+    expires_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
