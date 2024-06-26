@@ -8,6 +8,8 @@ pub use sqlx::PgPool;
 use url::Url;
 use uuid::Uuid;
 
+use cja::{app_state::AppState as _, jobs::Job};
+
 use crate::openai_utils::{generate_categories, generate_embedding, generate_summary};
 
 #[derive(sqlx::FromRow, Debug)]
@@ -69,12 +71,14 @@ pub async fn add_url(
 
     if upsert_result.page_id == new_page_id {
         println!("URL '{}' added successfully.", upsert_result.url);
+        // enqueue_process_article_job(pool, upsert_result.page_id).await?;
         Ok(AddUrlOutcome::Created(upsert_result))
     } else if *allow_existing {
         println!(
             "URL '{}' exists but re-adding is allowed.",
             upsert_result.url
         );
+        // enqueue_process_article_job(pool, upsert_result.page_id).await?;
         Ok(AddUrlOutcome::Existing(upsert_result))
     } else {
         Err(color_eyre::eyre::eyre!(
@@ -83,6 +87,7 @@ pub async fn add_url(
         ))
     }
 }
+
 
 async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
     let response = reqwest::get(url).await?;
@@ -139,7 +144,7 @@ async fn store_markdown(
     Ok(markdown_result)
 }
 
-async fn store_raw_html_in_page_snapshot(
+async fn store_html_content_in_page_snapshot(
     pool: &PgPool,
     page: Page,
 ) -> color_eyre::Result<PageSnapShot> {
@@ -158,7 +163,7 @@ async fn store_raw_html_in_page_snapshot(
         page.page_id
     )
     .fetch_one(pool)
-    .await?;
+    .await?;    
 
     let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
     println!("Markdown result: {markdown_result:?}");
@@ -167,7 +172,8 @@ async fn store_raw_html_in_page_snapshot(
 }
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
-    let outcome = store_raw_html_in_page_snapshot(pool, page).await?;
+    let outcome = store_html_content_in_page_snapshot(pool, page).await?;
     println!("Outcome: {outcome:?}");
     Ok(())
 }
+
