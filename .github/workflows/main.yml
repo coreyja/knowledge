@@ -11,6 +11,7 @@ jobs:
     name: Rust Tests
 
   deploy:
+    secrets: inherit
     needs:
       - tests
     uses: ./.github/workflows/deploy.yml
