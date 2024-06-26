@@ -27,10 +27,10 @@ pub async fn get_user(pool: &PgPool) -> Result<Vec<User>> {
     Ok(users)
 }
 
-pub async fn get_username_by_id(pool: &PgPool, user_id: Uuid) -> Result<String> {
+pub async fn get_username_by_id(pool: &PgPool, user_id: Uuid) -> Result<Option<String>> {
     let record = sqlx::query!("SELECT user_name FROM Users WHERE user_id = $1", user_id)
-        .fetch_one(pool)
+        .fetch_optional(pool)
         .await?;
 
-    Ok(record.user_name)
+    Ok(record.map(|r| r.user_name))
 }
