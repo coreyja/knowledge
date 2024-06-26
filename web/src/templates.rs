@@ -10,6 +10,7 @@ use crate::{err, AppState};
 
 pub struct Flash {
     error: Option<String>,
+    success: Option<String>,
 }
 
 #[async_trait::async_trait]
@@ -23,8 +24,9 @@ impl FromRequestParts<AppState> for Flash {
         let Query(query) =
             Query::<HashMap<String, String>>::from_request_parts(parts, _state).await?;
         let error = query.get("flash[error]").cloned();
+        let success = query.get("flash[success]").cloned();
 
-        Ok(Flash { error })
+        Ok(Flash { error, success })
     }
 }
 
@@ -72,6 +74,9 @@ impl TemplatedPage {
             body {
                 @if let Some(error) = &self.template.flash.error {
                     p class="color-red-500" { (error) }
+                }
+                @if let Some(success) = &self.template.flash.success {
+                    p class="color-green-500" { (success) }
                 }
                 (self.inner)
             }

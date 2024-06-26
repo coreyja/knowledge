@@ -29,8 +29,8 @@ pub async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
 
         h3 {  "Insert Article" }
         form method="post" action="/insert_article" {
-            label for="content" { "Content:" }
-            textarea id="content" name="content" placeholder="Article Content" {}
+            label for="url" { "URL:" }
+            textarea id="url" name="url" placeholder="Insert URL" {}
             br;
             input type="submit" value="Submit";
         }

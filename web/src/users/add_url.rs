@@ -2,6 +2,7 @@ use axum::{
     extract::{Form, State},
     response::{IntoResponse, Redirect},
 };
+
 use db::{urls::add_url, users::User};
 use serde::Deserialize;
 
@@ -21,12 +22,12 @@ pub async fn insert_article_handler(
     let url = form.url;
     let user_id = user.user_id;
 
-    println!("inserting");
+    tracing::info!("{}", url);
     match add_url(&state.db, &url, user_id, &true).await {
-        Ok(_) => Redirect::to("/dashboard"),
+        Ok(_) => Redirect::to("/dashboard?flash[success]=Article added"),
         Err(e) => {
             eprintln!("Error adding URL: {e:?}");
-            Redirect::to("/dashboard?error=Could not add article")
+            Redirect::to("/dashboard?flash[error]=Could not add article")
         }
     }
 }
