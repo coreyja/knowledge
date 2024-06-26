@@ -28,9 +28,9 @@ pub async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
         a href="/logout" { "Logout" }
 
         h3 {  "Insert Article" }
-        form method="post" action="/insert_article" {
-            label for="url" { "URL:" }
-            textarea id="url" name="url" placeholder="Insert URL" {}
+        form method="post" action="/articles" {
+            label for="url" { "URL :" }
+            input id="url" name="url" placeholder="Insert URL" {}
             br;
             input type="submit" value="Submit";
         }
