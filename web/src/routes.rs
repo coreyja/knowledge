@@ -2,11 +2,13 @@ use axum::routing::get;
 use axum::routing::post;
 use axum::routing::post;
 
+use crate::pages::article_detail;
 use crate::{
     admin,
     pages::{home, landing, user_dashboard},
     users, AppState,
 };
+
 
 pub fn routes(app_state: AppState) -> axum::Router {
     axum::Router::new()
@@ -21,5 +23,6 @@ pub fn routes(app_state: AppState) -> axum::Router {
             "/insert_articles",
             post(users::add_url::insert_article_handler),
         )
+        .route("/article/:article_id", get(article_detail))
         .with_state(app_state)
 }

@@ -8,15 +8,14 @@ pub use sqlx::PgPool;
 use url::Url;
 use uuid::Uuid;
 
-use cja::{app_state::AppState as _, jobs::Job};
-
 use crate::openai_utils::{generate_categories, generate_embedding, generate_summary};
 
-#[derive(sqlx::FromRow, Debug)]
+#[derive(sqlx::FromRow, Debug, Clone)]
 pub struct Page {
     pub page_id: Uuid,
     pub user_id: Uuid,
     pub url: String,
+
 }
 
 #[allow(clippy::module_name_repetitions)]
@@ -24,6 +23,15 @@ pub struct Page {
 pub enum AddUrlOutcome {
     Created(Page),
     Existing(Page),
+}
+
+impl AddUrlOutcome {
+    pub fn page(&self) -> &Page {
+        match self {
+            AddUrlOutcome::Created(page) => page,
+            AddUrlOutcome::Existing(page) => page,
+        }
+    }
 }
 
 #[derive(sqlx::FromRow, Debug)]
@@ -89,19 +97,19 @@ pub async fn add_url(
 }
 
 
-async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
+pub async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
     let response = reqwest::get(url).await?;
     let html = response.text().await?;
     Ok(html)
 }
 
-fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
+pub fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     let mut raw_html_cursor = std::io::Cursor::new(raw_html);
     let article = extractor::extract(&mut raw_html_cursor, url)?;
     Ok(article.content)
 }
 
-async fn store_category(
+pub async fn store_category(
     pool: &PgPool,
     markdown_id: Uuid,
     category: &str,
@@ -119,7 +127,7 @@ async fn store_category(
     Ok(result)
 }
 
-async fn store_markdown(
+pub async fn store_markdown(
     pool: &PgPool,
     page_snapshot_id: Uuid,
     cleaned_html: &str,
@@ -144,7 +152,7 @@ async fn store_markdown(
     Ok(markdown_result)
 }
 
-async fn store_html_content_in_page_snapshot(
+pub async fn store_html_content_in_page_snapshot(
     pool: &PgPool,
     page: Page,
 ) -> color_eyre::Result<PageSnapShot> {

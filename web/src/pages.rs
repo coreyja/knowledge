@@ -1,7 +1,18 @@
-use axum::response::{IntoResponse, Response};
-use db::users::User;
+use axum::{extract::{Path, State}, response::{IntoResponse, Response}};
+use db::{
+    urls::{Page, PageSnapShot},
+    users::User,
+};
+use miette::IntoDiagnostic;
 
-use crate::templates::{Template, TemplatedPage};
+use crate::{
+    templates::{Template, TemplatedPage},
+    AppState, WebResult,
+};
+
+use std::sync::Arc;
+use tokio::sync::RwLock;
+use uuid::Uuid;
 
 pub async fn home(t: Template, user: Option<User>) -> Response {
     match user {
@@ -35,4 +46,35 @@ pub async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
             input type="submit" value="Submit";
         }
     })
+}
+
+
+#[axum::debug_handler(state = AppState)]
+pub async fn article_detail(
+    t: Template,
+    Path(article_id): Path<Uuid>,
+    State(state): State<AppState>,
+) -> WebResult<Response> {
+    let page = sqlx::query_as!(Page, "SELECT * FROM pages WHERE page_id = $1", article_id)
+        .fetch_one(&state.db)
+        .await?;
+
+    let page_snapshot = sqlx::query_as!(
+        PageSnapShot,
+        "SELECT * FROM PageSnapshot WHERE page_id = $1",
+        article_id
+    )
+    .fetch_optional(&state.db)
+    .await?;
+
+    Ok(t.render(maud::html! {
+        @if let Some(page_snapshot) = page_snapshot {
+            p { (page_snapshot.cleaned_html) }
+        } @else {
+            p { "No page snapshot found" }
+        }
+        // h2 { "Summary" }
+        // p { (summary) }
+    })
+    .into_response())
 }

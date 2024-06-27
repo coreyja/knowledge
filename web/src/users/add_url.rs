@@ -2,11 +2,14 @@ use axum::{
     extract::{Form, State},
     response::{IntoResponse, Redirect},
 };
+use cja::jobs::Job;
+
+use crate::{jobs::process_article::ProcessArticle, AppState};
+// use cja::jobs::enqueue;
+// use crate::jobs::processArticle::ProcessArticle;
 
 use db::{urls::add_url, users::User};
 use serde::Deserialize;
-
-use crate::AppState;
 
 #[derive(Deserialize)]
 pub struct ArticleForm {
@@ -22,9 +25,19 @@ pub async fn insert_article_handler(
     let url = form.url;
     let user_id = user.user_id;
 
-    tracing::info!("{}", url);
     match add_url(&state.db, &url, user_id, &true).await {
-        Ok(_) => Redirect::to("/dashboard?flash[success]=Article added"),
+        Ok(page) => {
+            let page_id = page.page().page_id;
+            let process_article = ProcessArticle {
+                page_id: page_id.clone(),
+            };
+            // cja::jobs::enqueue(process_article, state.clone(), "context".to_string()).await.unwrap();
+            process_article
+                .enqueue(state.clone(), "context".to_string())
+                .await
+                .unwrap();
+            Redirect::to(&format!("/article/{page_id}?flash[success]=Article added"))
+        }
         Err(e) => {
             eprintln!("Error adding URL: {e:?}");
             Redirect::to("/dashboard?flash[error]=Could not add article")
