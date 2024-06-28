@@ -27,7 +27,7 @@ pub async fn insert_article_handler(
         Ok(page) => {
             let page_id = page.page().page_id;
             let process_article = ProcessArticle {
-                page_id: page_id.clone(),
+                page_id
             };
             process_article
                 .enqueue(state.clone(), "context".to_string())
