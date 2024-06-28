@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE PageSnapShot SET summary = $1 WHERE page_snapshot_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "7aeb2447260ab9796830851ffa007858c4cbfe7fa36f3545bb31113fd37a32d4"
+}

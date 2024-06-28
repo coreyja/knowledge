@@ -6,15 +6,12 @@ use db::{
     urls::{Page, PageSnapShot},
     users::User,
 };
-use miette::IntoDiagnostic;
 
 use crate::{
     templates::{Template, TemplatedPage},
     AppState, WebResult,
 };
 
-use std::sync::Arc;
-use tokio::sync::RwLock;
 use uuid::Uuid;
 
 pub async fn home(t: Template, user: Option<User>) -> Response {
@@ -57,14 +54,14 @@ pub async fn article_detail(
     Path(article_id): Path<Uuid>,
     State(state): State<AppState>,
 ) -> WebResult<Response> {
-    let page = sqlx::query_as!(Page, "SELECT * FROM pages WHERE page_id = $1", article_id)
+    let article_id = sqlx::query_as!(Page, "SELECT * FROM pages WHERE page_id = $1", article_id)
         .fetch_one(&state.db)
         .await?;
 
     let page_snapshot = sqlx::query_as!(
         PageSnapShot,
         "SELECT * FROM PageSnapshot WHERE page_id = $1",
-        article_id
+        article_id.page_id
     )
     .fetch_optional(&state.db)
     .await?;

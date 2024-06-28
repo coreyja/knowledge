@@ -8,17 +8,11 @@ mod sessions;
 mod templates;
 mod users;
 
-use std::{
-    collections::HashMap,
-    sync::{Arc, RwLock},
-};
-
 use cja::{app_state::AppState as AS, server::run_server};
 use db::setup_db_pool;
 use miette::IntoDiagnostic;
 
 use tracing::info;
-use uuid::Uuid;
 
 type WebResult<T, E = err::Error> = Result<T, E>;
 
@@ -26,7 +20,6 @@ type WebResult<T, E = err::Error> = Result<T, E>;
 struct AppState {
     db: sqlx::PgPool,
     cookie_key: cja::server::cookies::CookieKey,
-    summary_cache: Arc<RwLock<HashMap<Uuid, String>>>,
 }
 
 impl AS for AppState {
@@ -66,7 +59,6 @@ async fn _main() -> miette::Result<()> {
     let app_state = AppState {
         db: db_pool,
         cookie_key,
-        summary_cache: Arc::new(RwLock::new(HashMap::new())),
     };
 
     let app = routes::routes(app_state.clone());
