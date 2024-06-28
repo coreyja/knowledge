@@ -26,9 +26,7 @@ pub async fn insert_article_handler(
     match add_url(&state.db, &url, user_id, &true).await {
         Ok(page) => {
             let page_id = page.page().page_id;
-            let process_article = ProcessArticle {
-                page_id
-            };
+            let process_article = ProcessArticle { page_id };
             process_article
                 .enqueue(state.clone(), "context".to_string())
                 .await
