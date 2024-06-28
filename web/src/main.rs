@@ -8,7 +8,10 @@ mod sessions;
 mod templates;
 mod users;
 
-use std::{collections::HashMap, sync::{Arc, RwLock}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock},
+};
 
 use cja::{app_state::AppState as AS, server::run_server};
 use db::setup_db_pool;

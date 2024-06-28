@@ -51,7 +51,7 @@ impl Job<AppState> for ProcessArticle {
         let category = generate_categories(&cleaned_html).await.unwrap();
 
         store_category(db, page_snapshot.page_snapshot_id, &category).await;
-        
+
         Ok(())
     }
 }

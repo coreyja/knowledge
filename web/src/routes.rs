@@ -9,7 +9,6 @@ use crate::{
     users, AppState,
 };
 
-
 pub fn routes(app_state: AppState) -> axum::Router {
     axum::Router::new()
         .route("/", get(home))

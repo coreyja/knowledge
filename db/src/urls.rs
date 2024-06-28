@@ -156,8 +156,7 @@ pub async fn generate_and_store_summary(
 ) -> color_eyre::Result<()> {
     let markdown_content = html2md::parse_html(cleaned_html);
     let summary = generate_summary(&markdown_content).await?;
-    println!("Generated Summary: {summary}");
-
+    
     sqlx::query!(
         "UPDATE PageSnapShot SET summary = $1 WHERE page_snapshot_id = $2",
         summary,
@@ -190,8 +189,7 @@ pub async fn store_html_content_in_page_snapshot(
     .fetch_one(pool)
     .await?;
 
-    let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    // println!("Markdown result: {markdown_result:?}");
+    store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
     let markdown_content = html2md::parse_html(&cleaned_html);
     generate_and_store_summary(pool, result.page_snapshot_id, &markdown_content).await?;
 
