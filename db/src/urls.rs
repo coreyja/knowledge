@@ -15,7 +15,6 @@ pub struct Page {
     pub page_id: Uuid,
     pub user_id: Uuid,
     pub url: String,
-
 }
 
 #[allow(clippy::module_name_repetitions)]
@@ -41,6 +40,7 @@ pub struct PageSnapShot {
     pub raw_html: String,
     pub cleaned_html: String,
     pub fetched_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub summary: String,
 }
 
 #[derive(sqlx::FromRow, Debug)]
@@ -79,14 +79,12 @@ pub async fn add_url(
 
     if upsert_result.page_id == new_page_id {
         println!("URL '{}' added successfully.", upsert_result.url);
-        // enqueue_process_article_job(pool, upsert_result.page_id).await?;
         Ok(AddUrlOutcome::Created(upsert_result))
     } else if *allow_existing {
         println!(
             "URL '{}' exists but re-adding is allowed.",
             upsert_result.url
         );
-        // enqueue_process_article_job(pool, upsert_result.page_id).await?;
         Ok(AddUrlOutcome::Existing(upsert_result))
     } else {
         Err(color_eyre::eyre::eyre!(
@@ -95,7 +93,6 @@ pub async fn add_url(
         ))
     }
 }
-
 
 pub async fn download_raw_html(url: &str) -> color_eyre::Result<String> {
     let response = reqwest::get(url).await?;
@@ -133,8 +130,8 @@ pub async fn store_markdown(
     cleaned_html: &str,
 ) -> color_eyre::Result<Markdown> {
     let markdown_content = html2md::parse_html(cleaned_html);
-    let summary = generate_summary(&markdown_content).await?;
-    println!("Summary: {summary}");
+    // let summary = generate_summary(&markdown_content).await?;
+    // println!("Summary: {summary}");
 
     let markdown_result = sqlx::query_as!(
         Markdown,
@@ -150,6 +147,26 @@ pub async fn store_markdown(
     println!("Category result: {category_result:?}");
 
     Ok(markdown_result)
+}
+
+pub async fn generate_and_store_summary(
+    pool: &PgPool,
+    page_snapshot_id: Uuid,
+    cleaned_html: &str,
+) -> color_eyre::Result<()> {
+    let markdown_content = html2md::parse_html(cleaned_html);
+    let summary = generate_summary(&markdown_content).await?;
+    println!("Generated Summary: {summary}");
+
+    sqlx::query!(
+        "UPDATE PageSnapShot SET summary = $1 WHERE page_snapshot_id = $2",
+        summary,
+        page_snapshot_id
+    )
+    .execute(pool)
+    .await?;
+
+    Ok(())
 }
 
 pub async fn store_html_content_in_page_snapshot(
@@ -171,10 +188,12 @@ pub async fn store_html_content_in_page_snapshot(
         page.page_id
     )
     .fetch_one(pool)
-    .await?;    
+    .await?;
 
     let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    println!("Markdown result: {markdown_result:?}");
+    // println!("Markdown result: {markdown_result:?}");
+    let markdown_content = html2md::parse_html(&cleaned_html);
+    generate_and_store_summary(pool, result.page_snapshot_id, &markdown_content).await?;
 
     Ok(result)
 }
@@ -184,4 +203,3 @@ pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Res
     println!("Outcome: {outcome:?}");
     Ok(())
 }
-

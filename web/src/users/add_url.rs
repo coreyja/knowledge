@@ -5,8 +5,6 @@ use axum::{
 use cja::jobs::Job;
 
 use crate::{jobs::process_article::ProcessArticle, AppState};
-// use cja::jobs::enqueue;
-// use crate::jobs::processArticle::ProcessArticle;
 
 use db::{urls::add_url, users::User};
 use serde::Deserialize;
@@ -31,7 +29,6 @@ pub async fn insert_article_handler(
             let process_article = ProcessArticle {
                 page_id: page_id.clone(),
             };
-            // cja::jobs::enqueue(process_article, state.clone(), "context".to_string()).await.unwrap();
             process_article
                 .enqueue(state.clone(), "context".to_string())
                 .await

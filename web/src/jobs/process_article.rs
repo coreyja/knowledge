@@ -17,7 +17,7 @@ pub struct ProcessArticle {
 
 #[async_trait::async_trait]
 impl Job<AppState> for ProcessArticle {
-    const NAME: &'static str = "sessions::processArticle";
+    const NAME: &'static str = "process_article::processArticle";
 
     async fn run(&self, app_state: AppState) -> miette::Result<()> {
         let db = app_state.db();

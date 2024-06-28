@@ -1,4 +1,7 @@
-use axum::{extract::{Path, State}, response::{IntoResponse, Response}};
+use axum::{
+    extract::{Path, State},
+    response::{IntoResponse, Response},
+};
 use db::{
     urls::{Page, PageSnapShot},
     users::User,
@@ -48,7 +51,6 @@ pub async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
     })
 }
 
-
 #[axum::debug_handler(state = AppState)]
 pub async fn article_detail(
     t: Template,
@@ -69,12 +71,10 @@ pub async fn article_detail(
 
     Ok(t.render(maud::html! {
         @if let Some(page_snapshot) = page_snapshot {
-            p { (page_snapshot.cleaned_html) }
+            p { (page_snapshot.summary) }
         } @else {
             p { "No page snapshot found" }
         }
-        // h2 { "Summary" }
-        // p { (summary) }
     })
     .into_response())
 }
