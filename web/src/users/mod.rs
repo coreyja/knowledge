@@ -14,6 +14,7 @@ use crate::{
     AppState,
 };
 
+pub mod add_url;
 pub mod login;
 pub mod signup;
 
