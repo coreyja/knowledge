@@ -27,7 +27,7 @@ where
 
 impl IntoResponse for Error {
     fn into_response(self) -> axum::http::Response<axum::body::Body> {
-        error!("Error: {:#?}", self);
+        error!("Web Error: {:#}", self.report);
 
         axum::http::StatusCode::INTERNAL_SERVER_ERROR.into_response()
     }
