@@ -1,19 +1,76 @@
-use axum::{extract::State, routing::get};
+use axum::{
+    extract::{FromRequestParts, State},
+    http::{request::Parts, StatusCode},
+    response::IntoResponse,
+    routing::get,
+};
 use cja::app_state::AppState as _;
 use color_eyre::eyre::Context;
+use db::users::User;
 
-use crate::{AppState, WebResult};
+use crate::{err, users::ExtractUserError, AppState, WebResult};
 
-async fn simple_error() -> WebResult<()> {
+async fn simple_error(_: AdminUser) -> WebResult<()> {
     Err(color_eyre::eyre::eyre!("This is a test error"))?
 }
 
-async fn sql_error(State(app_state): State<AppState>) -> WebResult<()> {
+async fn sql_error(_: AdminUser, State(app_state): State<AppState>) -> WebResult<()> {
     let _ = sqlx::query("This is not valid sql")
         .fetch_one(app_state.db())
         .await
         .wrap_err("We meant for this to fail but lets see the error chain")?;
     Ok(())
+}
+
+#[derive(thiserror::Error, Debug)]
+enum ExtractAdminError {
+    #[error(transparent)]
+    ExtractUserError(ExtractUserError),
+    #[error("User is not an admin")]
+    NotAdmin,
+}
+
+impl IntoResponse for ExtractAdminError {
+    fn into_response(self) -> axum::response::Response {
+        // We only want to report a SQL error. Others we can return a 401
+        if let ExtractAdminError::ExtractUserError(ExtractUserError::SqlxError(e)) = self {
+            err::Error::from(e).into_response();
+        };
+
+        StatusCode::UNAUTHORIZED.into_response()
+    }
+}
+
+struct AdminUser(User);
+
+#[async_trait::async_trait]
+impl FromRequestParts<AppState> for AdminUser {
+    type Rejection = ExtractAdminError;
+
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
+        let user = User::from_request_parts(parts, state)
+            .await
+            .map_err(ExtractAdminError::ExtractUserError)?;
+
+        if is_admin(&user) {
+            Ok(AdminUser(user))
+        } else {
+            Err(ExtractAdminError::NotAdmin)
+        }
+    }
+}
+
+fn is_admin(user: &User) -> bool {
+    let admin_usernames = std::env::var("ADMIN_USERNAMES").unwrap_or_else(|_| String::new());
+    let admin_usernames = admin_usernames
+        .split(',')
+        .filter(|x| !x.is_empty())
+        .collect::<Vec<&str>>();
+
+    admin_usernames.contains(&user.user_name.as_str())
 }
 
 pub fn routes() -> axum::Router<AppState> {
