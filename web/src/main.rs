@@ -1,3 +1,4 @@
+mod admin;
 mod cron;
 mod err;
 mod jobs;

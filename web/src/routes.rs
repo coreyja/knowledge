@@ -2,6 +2,7 @@ use axum::routing::get;
 use axum::routing::post;
 
 use crate::{
+    admin,
     pages::{home, landing, user_dashboard},
     users, AppState,
 };
@@ -9,6 +10,7 @@ use crate::{
 pub fn routes(app_state: AppState) -> axum::Router {
     axum::Router::new()
         .route("/", get(home))
+        .nest("/_", admin::routes())
         .route("/hello", get(landing))
         .route("/dashboard", get(user_dashboard))
         .route("/login", get(users::login::get).post(users::login::post))
