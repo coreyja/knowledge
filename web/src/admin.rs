@@ -8,7 +8,7 @@ use cja::app_state::AppState as _;
 use color_eyre::eyre::Context;
 use db::users::User;
 
-use crate::{err, users::ExtractUserError, AppState, WebResult};
+use crate::{err, templates::Template, users::ExtractUserError, AppState, WebResult};
 
 async fn simple_error(_: AdminUser) -> WebResult<()> {
     Err(color_eyre::eyre::eyre!("This is a test error"))?
@@ -73,8 +73,19 @@ fn is_admin(user: &User) -> bool {
     admin_usernames.contains(&user.user_name.as_str())
 }
 
+async fn hello(t: Template, admin: AdminUser) -> WebResult<impl IntoResponse> {
+    Ok(t.render(maud::html! {
+      h1 { "Hello Admin "  (admin.0.user_name) }
+
+      a href="/_/test_errors/simple" { "Test Simple Error" }
+      br;
+      a href="/_/test_errors/sql" { "Test SQL Error" }
+    }))
+}
+
 pub fn routes() -> axum::Router<AppState> {
     axum::Router::new()
+        .route("/", get(hello))
         .route("/test_errors/simple", get(simple_error))
         .route("/test_errors/sql", get(sql_error))
 }
