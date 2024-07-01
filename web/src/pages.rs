@@ -70,7 +70,7 @@ pub async fn article_detail(
         @if let Some(page_snapshot) = page_snapshot {
             p { (page_snapshot.summary) }
         } @else {
-            p { "No page snapshot found" }
+            p { "Generating snapshot....." }
         }
     })
     .into_response())
