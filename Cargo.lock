@@ -464,6 +464,7 @@ dependencies = [
  "db",
  "sqlx",
  "tokio",
+ "url",
  "uuid",
 ]
 

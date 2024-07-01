@@ -3,7 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use db::{
-    urls::{Page, Markdown},
+    urls::Markdown,
     users::User,
 };
 
@@ -12,8 +12,8 @@ use crate::{
     AppState, WebResult,
 };
 
-use uuid::Uuid;
-use tracing::info; // Add this line for logging
+use tracing::info;
+use uuid::Uuid; // Add this line for logging
 
 pub async fn home(t: Template, user: Option<User>) -> Response {
     match user {
@@ -57,11 +57,15 @@ pub async fn article_detail(
 ) -> WebResult<Response> {
     info!("Fetching article MD ID: {}", article_id);
 
-    let article = sqlx::query_as!(Markdown, "SELECT * FROM markdown WHERE markdown_id = $1", article_id)
-        .fetch_one(&state.db)
-        .await?;
+    let article = sqlx::query_as!(
+        Markdown,
+        "SELECT * FROM markdown WHERE markdown_id = $1",
+        article_id
+    )
+    .fetch_one(&state.db)
+    .await?;
 
-    info!("Fetched MD: {:?}", article); 
+    info!("Fetched MD: {:?}", article);
 
     let markdown = sqlx::query_as!(
         Markdown,

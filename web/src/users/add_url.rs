@@ -3,12 +3,17 @@ use axum::{
     response::{IntoResponse, Redirect},
 };
 use cja::jobs::Job;
-use url::Url;
-use tracing::info; // Add this line for logging
+use tracing::info;
+use url::Url; 
 
 use crate::{jobs::process_article::ProcessArticle, AppState, WebResult};
 
-use db::{urls::{add_url, clean_raw_html, download_raw_html, generate_and_store_summary, store_markdown}, users::User};
+use db::{
+    urls::{
+        add_url, clean_raw_html, download_raw_html, generate_and_store_summary, store_markdown,
+    },
+    users::User,
+};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
@@ -34,12 +39,19 @@ pub async fn insert_article_handler(
     let url_parsed = Url::parse(&url)?;
     let cleaned_html = clean_raw_html(&raw_html, &url_parsed)?;
 
-    let (markdown, _) = store_markdown(&state.db, page_id, &cleaned_html).await.unwrap();
+    let (markdown, _) = store_markdown(&state.db, page_id, &cleaned_html)
+        .await
+        .unwrap();
     let markdown_id = markdown.markdown_id;
 
-    generate_and_store_summary(&state.db, markdown_id, &cleaned_html).await.unwrap();
+    generate_and_store_summary(&state.db, markdown_id, &cleaned_html)
+        .await
+        .unwrap();
 
-    let process_article = ProcessArticle { page_id, markdown_id };
+    let process_article = ProcessArticle {
+        page_id,
+        markdown_id,
+    };
     process_article
         .enqueue(state.clone(), "insert_article_handler".to_string())
         .await?;

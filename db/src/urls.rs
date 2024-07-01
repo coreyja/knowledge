@@ -166,7 +166,11 @@ pub async fn generate_and_store_summary(
     Ok(())
 }
 
-pub async fn persist_article(pool: &PgPool, page: Page, markdown: Markdown) -> color_eyre::Result<PageSnapShot> {
+pub async fn persist_article(
+    pool: &PgPool,
+    page: Page,
+    _markdown: Markdown,
+) -> color_eyre::Result<PageSnapShot> {
     let raw_html = download_raw_html(&page.url).await?;
     let current_time = chrono::Utc::now();
     let url = Url::parse(&page.url)?;
@@ -184,13 +188,18 @@ pub async fn persist_article(pool: &PgPool, page: Page, markdown: Markdown) -> c
     .fetch_one(pool)
     .await?;
 
-    let (_, markdown_content) = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
+    let (_, markdown_content) =
+        store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
     generate_and_store_summary(pool, result.page_snapshot_id, &markdown_content).await?;
 
     Ok(result)
 }
 
-pub async fn process_page_snapshot(pool: &PgPool, page: Page, markdown: Markdown) -> color_eyre::Result<()> {
+pub async fn process_page_snapshot(
+    pool: &PgPool,
+    page: Page,
+    markdown: Markdown,
+) -> color_eyre::Result<()> {
     let _outcome = persist_article(pool, page, markdown).await?;
     Ok(())
 }

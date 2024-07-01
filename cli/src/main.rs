@@ -8,9 +8,14 @@ use auth::check_auth_status;
 use auth::get_user_id_from_session;
 
 mod sign_up;
+use db::urls::clean_raw_html;
+use db::urls::download_raw_html;
 use db::urls::process_page_snapshot;
+use db::urls::store_markdown;
 use db::urls::AddUrlOutcome;
 use sign_up::sign_up;
+
+use url::Url;
 
 mod display_user;
 use display_user::display_users;
@@ -62,11 +67,15 @@ async fn main() -> color_eyre::Result<()> {
             allow_existing,
         } => {
             let user_id = get_user_id_from_session()?;
+            let raw_html = download_raw_html(&url).await?;
+            let url_parsed = Url::parse(&url)?;
+            let cleaned_html = clean_raw_html(&raw_html, &url_parsed)?;
             let outcome = append_url(&db_pool, &url, user_id, allow_existing).await?;
             let page = match outcome {
                 AddUrlOutcome::Created(page) | AddUrlOutcome::Existing(page) => page,
             };
-            process_page_snapshot(&db_pool, page).await?;
+            let (markdown, _) = store_markdown(&db_pool, page.page_id, &cleaned_html).await?;
+            process_page_snapshot(&db_pool, page, markdown).await?;
         }
     }
 
