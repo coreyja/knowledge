@@ -4,16 +4,18 @@ use miette::IntoDiagnostic;
 
 use uuid::Uuid;
 
-use db::urls::{persist_article, Page};
+use db::urls::{persist_article, Page, Markdown};
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct ProcessArticle {
     pub page_id: Uuid,
+    pub markdown_id: Uuid,
 }
 
 #[async_trait::async_trait]
 impl Job<AppState> for ProcessArticle {
     const NAME: &'static str = "process_article::ProcessArticle";
+
 
     async fn run(&self, app_state: AppState) -> miette::Result<()> {
         let db = app_state.db();
@@ -23,7 +25,12 @@ impl Job<AppState> for ProcessArticle {
             .await
             .into_diagnostic()?;
 
-        persist_article(db, page.clone()).await.unwrap();
+        let markdown = sqlx::query_as!(Markdown, "SELECT * FROM markdown WHERE markdown_id = $1", self.markdown_id)
+            .fetch_one(db)
+            .await
+            .into_diagnostic()?;
+
+        persist_article(db, page, markdown.clone()).await.unwrap();
 
         Ok(())
     }

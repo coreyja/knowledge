@@ -17,6 +17,11 @@
         "ordinal": 2,
         "name": "content_md",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "summary",
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -28,6 +33,7 @@
     "nullable": [
       false,
       true,
+      false,
       false
     ]
   },

@@ -3,7 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use db::{
-    urls::{Page, PageSnapShot},
+    urls::{Page, Markdown},
     users::User,
 };
 
@@ -13,6 +13,7 @@ use crate::{
 };
 
 use uuid::Uuid;
+use tracing::info; // Add this line for logging
 
 pub async fn home(t: Template, user: Option<User>) -> Response {
     match user {
@@ -54,21 +55,27 @@ pub async fn article_detail(
     Path(article_id): Path<Uuid>,
     State(state): State<AppState>,
 ) -> WebResult<Response> {
-    let article_id = sqlx::query_as!(Page, "SELECT * FROM pages WHERE page_id = $1", article_id)
+    info!("Fetching article MD ID: {}", article_id);
+
+    let article = sqlx::query_as!(Markdown, "SELECT * FROM markdown WHERE markdown_id = $1", article_id)
         .fetch_one(&state.db)
         .await?;
 
-    let page_snapshot = sqlx::query_as!(
-        PageSnapShot,
-        "SELECT * FROM PageSnapshot WHERE page_id = $1",
-        article_id.page_id
+    info!("Fetched MD: {:?}", article); 
+
+    let markdown = sqlx::query_as!(
+        Markdown,
+        "SELECT * FROM Markdown WHERE markdown_id = $1",
+        article.markdown_id
     )
     .fetch_optional(&state.db)
     .await?;
 
+    info!("Fetched markdown MD: {:?}", markdown);
+
     Ok(t.render(maud::html! {
-        @if let Some(page_snapshot) = page_snapshot {
-            p { (page_snapshot.summary) }
+        @if let Some(markdown) = markdown {
+            p { (markdown.summary) }
         } @else {
             p { "Generating snapshot....." }
         }

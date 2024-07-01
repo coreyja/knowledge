@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "UPDATE PageSnapShot SET summary = $1 WHERE page_snapshot_id = $2",
+  "query": "UPDATE Markdown SET summary = $1 WHERE markdown_id = $2",
   "describe": {
     "columns": [],
     "parameters": {
@@ -11,5 +11,5 @@
     },
     "nullable": []
   },
-  "hash": "7aeb2447260ab9796830851ffa007858c4cbfe7fa36f3545bb31113fd37a32d4"
+  "hash": "e1526819c1c959b6d61068d916a5f78d0bd6ff02920991e270fb6d1a9736844f"
 }

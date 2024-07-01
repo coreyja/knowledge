@@ -43,11 +43,12 @@ pub struct PageSnapShot {
     pub summary: String,
 }
 
-#[derive(sqlx::FromRow, Debug)]
+#[derive(sqlx::FromRow, Debug, Clone)]
 pub struct Markdown {
     pub markdown_id: Uuid,
     pub title: Option<String>,
     pub content_md: String,
+    pub summary: String,
 }
 
 #[derive(sqlx::FromRow, Debug)]
@@ -149,15 +150,15 @@ pub async fn store_markdown(
 
 pub async fn generate_and_store_summary(
     pool: &PgPool,
-    page_snapshot_id: Uuid,
+    markdown_id: Uuid,
     cleaned_html: &str,
 ) -> color_eyre::Result<()> {
     let summary = generate_summary(cleaned_html).await?;
 
     sqlx::query!(
-        "UPDATE PageSnapShot SET summary = $1 WHERE page_snapshot_id = $2",
+        "UPDATE Markdown SET summary = $1 WHERE markdown_id = $2",
         summary,
-        page_snapshot_id
+        markdown_id
     )
     .execute(pool)
     .await?;
@@ -165,7 +166,7 @@ pub async fn generate_and_store_summary(
     Ok(())
 }
 
-pub async fn persist_article(pool: &PgPool, page: Page) -> color_eyre::Result<PageSnapShot> {
+pub async fn persist_article(pool: &PgPool, page: Page, markdown: Markdown) -> color_eyre::Result<PageSnapShot> {
     let raw_html = download_raw_html(&page.url).await?;
     let current_time = chrono::Utc::now();
     let url = Url::parse(&page.url)?;
@@ -183,14 +184,13 @@ pub async fn persist_article(pool: &PgPool, page: Page) -> color_eyre::Result<Pa
     .fetch_one(pool)
     .await?;
 
-    let (_, markdown_content) =
-        store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
+    let (_, markdown_content) = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
     generate_and_store_summary(pool, result.page_snapshot_id, &markdown_content).await?;
 
     Ok(result)
 }
 
-pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
-    let _outcome = persist_article(pool, page).await?;
+pub async fn process_page_snapshot(pool: &PgPool, page: Page, markdown: Markdown) -> color_eyre::Result<()> {
+    let _outcome = persist_article(pool, page, markdown).await?;
     Ok(())
 }
