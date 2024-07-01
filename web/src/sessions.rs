@@ -47,7 +47,7 @@ impl Session {
             cja::tower_cookies::Cookie::build(("session_id", session.session_id.to_string()))
                 .path("/")
                 .http_only(true)
-                .secure(true)
+                .secure(std::env::var("HTTPS").unwrap_or_else(|_| "true".to_string()) == "true")
                 .expires(None);
         private.add(session_cookie.into());
 

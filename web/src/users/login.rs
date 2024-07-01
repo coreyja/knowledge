@@ -17,8 +17,12 @@ use crate::{sessions::Session, templates::Template, AppState, WebResult};
 pub async fn get(t: Template) -> impl IntoResponse {
     t.render(maud::html! {
         form method="post" action="/login" {
+            label for="username" { "Username:" }
             input type="text" name="username" placeholder="Username";
+            br;
+            label for="password" { "Password:" }
             input type="password" name="password" placeholder="Password";
+            br;
             input type="submit" value="Login";
         }
     })
