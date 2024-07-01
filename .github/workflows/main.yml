@@ -7,17 +7,12 @@ on:
 
 jobs:
   tests:
-    uses: ./.github/workflows/rust_tests.yml
-    name: Rust Tests
-
-  end2end:
-    uses: ./.github/workflows/playwright.yml
-    name: Playwright Tests
+    uses: ./.github/workflows/tests.yml
+    name: Tests
 
   deploy:
     secrets: inherit
     needs:
       - tests
-      - end2end
     uses: ./.github/workflows/deploy.yml
     name: Deploy
