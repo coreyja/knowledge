@@ -4,7 +4,7 @@ use axum::{
 };
 use cja::jobs::Job;
 use tracing::info;
-use url::Url; 
+use url::Url;
 
 use crate::{jobs::process_article::ProcessArticle, AppState, WebResult};
 

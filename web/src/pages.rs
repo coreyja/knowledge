@@ -2,10 +2,7 @@ use axum::{
     extract::{Path, State},
     response::{IntoResponse, Response},
 };
-use db::{
-    urls::Markdown,
-    users::User,
-};
+use db::{urls::Markdown, users::User};
 
 use crate::{
     templates::{Template, TemplatedPage},
