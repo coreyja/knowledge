@@ -1,6 +1,5 @@
 use axum::routing::get;
 use axum::routing::post;
-use axum::routing::post;
 
 use crate::pages::article_detail;
 use crate::{
