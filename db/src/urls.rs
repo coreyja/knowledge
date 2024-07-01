@@ -25,7 +25,6 @@ pub enum AddUrlOutcome {
 }
 
 impl AddUrlOutcome {
-    #[must_use]
     pub fn page(&self) -> &Page {
         match self {
             AddUrlOutcome::Created(page) | AddUrlOutcome::Existing(page) => page,

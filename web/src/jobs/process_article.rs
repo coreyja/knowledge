@@ -24,9 +24,7 @@ impl Job<AppState> for ProcessArticle {
             .into_diagnostic()?;
 
         // store the html content in the page snapshot
-        let page_snapshot = store_html_content_in_page_snapshot(db, page.clone()).await;
-
-        println!("{:?}", page_snapshot);
+         store_html_content_in_page_snapshot(db, page.clone()).await.unwrap();
 
         Ok(())
     }
