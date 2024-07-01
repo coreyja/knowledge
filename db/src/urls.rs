@@ -128,10 +128,8 @@ pub async fn store_markdown(
     pool: &PgPool,
     page_snapshot_id: Uuid,
     cleaned_html: &str,
-) -> color_eyre::Result<Markdown> {
+) -> color_eyre::Result<(Markdown, String)> {
     let markdown_content = html2md::parse_html(cleaned_html);
-    // let summary = generate_summary(&markdown_content).await?;
-    // println!("Summary: {summary}");
 
     let markdown_result = sqlx::query_as!(
         Markdown,
@@ -146,7 +144,7 @@ pub async fn store_markdown(
     let category_result = store_category(pool, markdown_result.markdown_id, &category).await?;
     println!("Category result: {category_result:?}");
 
-    Ok(markdown_result)
+    Ok((markdown_result, markdown_content))
 }
 
 pub async fn generate_and_store_summary(
@@ -154,8 +152,7 @@ pub async fn generate_and_store_summary(
     page_snapshot_id: Uuid,
     cleaned_html: &str,
 ) -> color_eyre::Result<()> {
-    let markdown_content = html2md::parse_html(cleaned_html);
-    let summary = generate_summary(&markdown_content).await?;
+    let summary = generate_summary(cleaned_html).await?;
 
     sqlx::query!(
         "UPDATE PageSnapShot SET summary = $1 WHERE page_snapshot_id = $2",
@@ -189,8 +186,7 @@ pub async fn store_html_content_in_page_snapshot(
     .fetch_one(pool)
     .await?;
 
-    store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    let markdown_content = html2md::parse_html(&cleaned_html);
+    let (_, markdown_content) = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
     generate_and_store_summary(pool, result.page_snapshot_id, &markdown_content).await?;
 
     Ok(result)
