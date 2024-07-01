@@ -8,9 +8,11 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./end2end
     steps:
       - uses: actions/checkout@v4
-      - run: cd end2end
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
