@@ -13,7 +13,7 @@ pub struct ProcessArticle {
 
 #[async_trait::async_trait]
 impl Job<AppState> for ProcessArticle {
-    const NAME: &'static str = "process_article::processArticle";
+    const NAME: &'static str = "process_article::ProcessArticle";
 
     async fn run(&self, app_state: AppState) -> miette::Result<()> {
         let db = app_state.db();
@@ -23,7 +23,6 @@ impl Job<AppState> for ProcessArticle {
             .await
             .into_diagnostic()?;
 
-        // store the html content in the page snapshot
         persist_article(db, page.clone()).await.unwrap();
 
         Ok(())
