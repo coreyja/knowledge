@@ -24,6 +24,7 @@ pub enum AddUrlOutcome {
     Existing(Page),
 }
 
+#[allow(clippy::must_use_candidate)]
 impl AddUrlOutcome {
     pub fn page(&self) -> &Page {
         match self {
@@ -190,7 +191,6 @@ pub async fn persist_article(pool: &PgPool, page: Page) -> color_eyre::Result<Pa
 }
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
-    let outcome = persist_article(pool, page).await?;
-    // println!("Outcome: {outcome:?}");
+    let _outcome = persist_article(pool, page).await?;
     Ok(())
 }
