@@ -4,7 +4,7 @@ use miette::IntoDiagnostic;
 
 use uuid::Uuid;
 
-use db::urls::{store_html_content_in_page_snapshot, Page};
+use db::urls::{persist_article, Page};
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct ProcessArticle {
@@ -24,7 +24,7 @@ impl Job<AppState> for ProcessArticle {
             .into_diagnostic()?;
 
         // store the html content in the page snapshot
-         store_html_content_in_page_snapshot(db, page.clone()).await.unwrap();
+        persist_article(db, page.clone()).await.unwrap();
 
         Ok(())
     }

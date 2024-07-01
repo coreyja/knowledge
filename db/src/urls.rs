@@ -164,7 +164,7 @@ pub async fn generate_and_store_summary(
     Ok(())
 }
 
-pub async fn store_html_content_in_page_snapshot(
+pub async fn persist_article(
     pool: &PgPool,
     page: Page,
 ) -> color_eyre::Result<PageSnapShot> {
@@ -192,7 +192,7 @@ pub async fn store_html_content_in_page_snapshot(
 }
 
 pub async fn process_page_snapshot(pool: &PgPool, page: Page) -> color_eyre::Result<()> {
-    let outcome = store_html_content_in_page_snapshot(pool, page).await?;
-    println!("Outcome: {outcome:?}");
+    let outcome = persist_article(pool, page).await?;
+    // println!("Outcome: {outcome:?}");
     Ok(())
 }
