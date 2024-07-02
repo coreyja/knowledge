@@ -39,7 +39,7 @@ pub async fn insert_article_handler(
     let url_parsed = Url::parse(&url)?;
     let cleaned_html = clean_raw_html(&raw_html, &url_parsed)?;
 
-    let (markdown, _) = store_markdown(&state.db, page_id, &cleaned_html)
+    let markdown = store_markdown(&state.db, page_id, &cleaned_html)
         .await
         .unwrap();
     let markdown_id = markdown.markdown_id;

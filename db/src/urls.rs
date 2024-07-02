@@ -129,7 +129,7 @@ pub async fn store_markdown(
     pool: &PgPool,
     page_snapshot_id: Uuid,
     cleaned_html: &str,
-) -> color_eyre::Result<(Markdown, String)> {
+) -> color_eyre::Result<Markdown> {
     let markdown_content = html2md::parse_html(cleaned_html);
 
     let markdown_result = sqlx::query_as!(
@@ -145,7 +145,7 @@ pub async fn store_markdown(
     let category_result = store_category(pool, markdown_result.markdown_id, &category).await?;
     println!("Category result: {category_result:?}");
 
-    Ok((markdown_result, markdown_content))
+    Ok(markdown_result)
 }
 
 pub async fn generate_and_store_summary(
@@ -188,9 +188,9 @@ pub async fn persist_article(
     .fetch_one(pool)
     .await?;
 
-    let (_, markdown_content) =
+    let markdown_result =
         store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    generate_and_store_summary(pool, result.page_snapshot_id, &markdown_content).await?;
+    generate_and_store_summary(pool, markdown_result.markdown_id, &markdown_result.content_md).await?;
 
     Ok(result)
 }
