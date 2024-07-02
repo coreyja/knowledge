@@ -32,7 +32,7 @@ jobs:
       - name: Install SQLx CLI
         run: cargo install sqlx-cli --no-default-features --features rustls,postgres
       - name: Build Server
-        run: cd .. && cargo run --bin web
+        run: cd .. && cargo build --bin web
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
