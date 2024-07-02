@@ -10,7 +10,7 @@ use crate::{
 };
 
 use tracing::info;
-use uuid::Uuid; // Add this line for logging
+use uuid::Uuid; 
 
 pub async fn home(t: Template, user: Option<User>) -> Response {
     match user {
@@ -67,15 +67,13 @@ pub async fn article_detail(
     .await?;
 
     let markdown = if let Some(page_snapshot) = page_snapshot {
-        let markdown = sqlx::query_as!(
+        sqlx::query_as!(
             Markdown,
             "SELECT * FROM markdown WHERE page_snapshot_id = $1",
             page_snapshot.page_snapshot_id
         )
         .fetch_optional(&state.db)
-        .await?;
-
-        markdown
+        .await?
     } else {
         None
     };

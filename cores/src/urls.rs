@@ -88,7 +88,7 @@ pub async fn generate_and_store_summary(
 //     let url = Url::parse(&page.url)?;
 //     let cleaned_html = clean_raw_html(&raw_html, &url)?;
 
-//     let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
+//     let markdown_result = store_in_markdown_table(pool, result.page_snapshot_id, &cleaned_html).await?;
 //     generate_and_store_summary(
 //         pool,
 //         markdown_result.markdown_id,

@@ -5,7 +5,7 @@ use miette::IntoDiagnostic;
 use url::Url;
 use uuid::Uuid;
 
-use cores::markdown::store_markdown;
+use cores::markdown::store_in_markdown_table;
 use cores::page_snapshot::{clean_raw_html, download_raw_html, PageSnapShot};
 use cores::urls::{generate_and_store_summary, Page};
 
@@ -44,7 +44,7 @@ impl Job<AppState> for ProcessArticle {
         .await
         .unwrap();
 
-        let markdown = store_markdown(db, page_snapshot).await.unwrap();
+        let markdown = store_in_markdown_table(db, page_snapshot).await.unwrap();
         let markdown_id = markdown.markdown_id;
 
         generate_and_store_summary(db, markdown_id, &cleaned_html)

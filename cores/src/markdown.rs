@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::category::store_category;
+use crate::category::store_in_category_table;
 use crate::openai_utils::generate_categories;
 use crate::page_snapshot::PageSnapShot;
 
@@ -14,7 +14,7 @@ pub struct Markdown {
     pub summary: String,
 }
 
-pub async fn store_markdown(
+pub async fn store_in_markdown_table(
     pool: &PgPool,
     page_snapshot: PageSnapShot,
 ) -> color_eyre::Result<Markdown> {
@@ -33,7 +33,8 @@ pub async fn store_markdown(
     .await?;
 
     let category = generate_categories(&content_md).await?;
-    let category_result = store_category(pool, markdown_result.markdown_id, &category).await?;
+    let category_result =
+        store_in_category_table(pool, markdown_result.markdown_id, &category).await?;
     println!("Category result: {category_result:?}");
 
     Ok(markdown_result)

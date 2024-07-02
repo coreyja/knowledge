@@ -10,7 +10,7 @@ pub struct Category {
     pub embedding: Option<Vec<f64>>,
 }
 
-pub async fn store_category(
+pub async fn store_in_category_table(
     pool: &PgPool,
     markdown_id: Uuid,
     category: &str,

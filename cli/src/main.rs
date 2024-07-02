@@ -67,9 +67,9 @@ async fn main() -> color_eyre::Result<()> {
             let user_id = get_user_id_from_session()?;
             let raw_html = download_raw_html(&url).await?;
             let url_parsed = Url::parse(&url)?;
-            let cleaned_html = clean_raw_html(&raw_html, &url_parsed)?;
+            let _cleaned_html = clean_raw_html(&raw_html, &url_parsed)?;
             let outcome = append_url(&db_pool, &url, user_id, allow_existing).await?;
-            let page = match outcome {
+            let _page = match outcome {
                 AddUrlOutcome::Created(page) | AddUrlOutcome::Existing(page) => page,
             };
         }
