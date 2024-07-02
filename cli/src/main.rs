@@ -10,7 +10,7 @@ use auth::get_user_id_from_session;
 mod sign_up;
 use db::urls::clean_raw_html;
 use db::urls::download_raw_html;
-use db::urls::process_page_snapshot;
+use db::urls::persist_article;
 use db::urls::store_markdown;
 use db::urls::AddUrlOutcome;
 use sign_up::sign_up;
@@ -74,8 +74,8 @@ async fn main() -> color_eyre::Result<()> {
             let page = match outcome {
                 AddUrlOutcome::Created(page) | AddUrlOutcome::Existing(page) => page,
             };
-            let markdown= store_markdown(&db_pool, page.page_id, &cleaned_html).await?;
-            process_page_snapshot(&db_pool, page, markdown).await?;
+            let markdown = store_markdown(&db_pool, page.page_id, &cleaned_html).await?;
+            persist_article(&db_pool, page, markdown).await?;
         }
     }
 

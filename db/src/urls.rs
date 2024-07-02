@@ -188,18 +188,13 @@ pub async fn persist_article(
     .fetch_one(pool)
     .await?;
 
-    let markdown_result =
-        store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
-    generate_and_store_summary(pool, markdown_result.markdown_id, &markdown_result.content_md).await?;
+    let markdown_result = store_markdown(pool, result.page_snapshot_id, &cleaned_html).await?;
+    generate_and_store_summary(
+        pool,
+        markdown_result.markdown_id,
+        &markdown_result.content_md,
+    )
+    .await?;
 
     Ok(result)
-}
-
-pub async fn process_page_snapshot(
-    pool: &PgPool,
-    page: Page,
-    markdown: Markdown,
-) -> color_eyre::Result<()> {
-    let _outcome = persist_article(pool, page, markdown).await?;
-    Ok(())
 }
