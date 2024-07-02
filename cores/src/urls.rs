@@ -1,12 +1,8 @@
 pub use sqlx;
-use sqlx::types::chrono;
 pub use sqlx::PgPool;
-use url::Url;
 use uuid::Uuid;
 
-use crate::markdown::store_markdown;
-use crate::openai_utils::{generate_categories, generate_embedding, generate_summary};
-use crate::page_snapshot::{clean_raw_html, download_raw_html, PageSnapShot};
+use crate::openai_utils::generate_summary;
 
 #[derive(sqlx::FromRow, Debug, Clone)]
 pub struct Page {

@@ -4,16 +4,10 @@ use axum::{
 };
 use cja::jobs::Job;
 use tracing::info;
-use url::Url;
 
 use crate::{jobs::process_article::ProcessArticle, AppState, WebResult};
 
-use cores::{
-    markdown::store_markdown,
-    page_snapshot::{clean_raw_html, download_raw_html},
-    urls::add_url,
-    users::User,
-};
+use cores::{urls::add_url, users::User};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
