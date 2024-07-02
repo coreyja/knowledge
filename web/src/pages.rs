@@ -10,7 +10,7 @@ use crate::{
 };
 
 use tracing::info;
-use uuid::Uuid; 
+use uuid::Uuid;
 
 pub async fn home(t: Template, user: Option<User>) -> Response {
     match user {
