@@ -74,8 +74,7 @@ async fn main() -> color_eyre::Result<()> {
             let page = match outcome {
                 AddUrlOutcome::Created(page) | AddUrlOutcome::Existing(page) => page,
             };
-            let markdown = store_markdown(&db_pool, page.page_id, &cleaned_html).await?;
-            persist_article(&db_pool, page, markdown).await?;
+            persist_article(&db_pool, page).await   ?;
         }
     }
 

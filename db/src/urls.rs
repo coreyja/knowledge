@@ -166,10 +166,22 @@ pub async fn generate_and_store_summary(
     Ok(())
 }
 
+pub async fn get_markdown_id(pool: &PgPool, markdown_id: Uuid) -> color_eyre::Result<Markdown> {
+    let markdown = sqlx::query_as!(
+        Markdown,
+        "SELECT * FROM Markdown WHERE markdown_id = $1",
+        markdown_id
+    )
+    .fetch_one(pool)
+    .await?;
+
+    Ok(markdown)
+}
+
+
 pub async fn persist_article(
     pool: &PgPool,
     page: Page,
-    _markdown: Markdown,
 ) -> color_eyre::Result<PageSnapShot> {
     let raw_html = download_raw_html(&page.url).await?;
     let current_time = chrono::Utc::now();

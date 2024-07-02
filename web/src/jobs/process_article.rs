@@ -2,9 +2,10 @@ use crate::AppState;
 use cja::{app_state::AppState as _, jobs::Job};
 use miette::IntoDiagnostic;
 
+use url::Url;
 use uuid::Uuid;
 
-use db::urls::{persist_article, Markdown, Page};
+use db::urls::{clean_raw_html, download_raw_html, generate_and_store_summary, persist_article, store_markdown, Markdown, Page};
 
 #[derive(Clone, Debug, serde::Deserialize, serde::Serialize)]
 pub struct ProcessArticle {
@@ -24,16 +25,7 @@ impl Job<AppState> for ProcessArticle {
             .await
             .into_diagnostic()?;
 
-        let markdown = sqlx::query_as!(
-            Markdown,
-            "SELECT * FROM markdown WHERE markdown_id = $1",
-            self.markdown_id
-        )
-        .fetch_one(db)
-        .await
-        .into_diagnostic()?;
-
-        persist_article(db, page, markdown.clone()).await.unwrap();
+        persist_article(db, page).await.unwrap();
 
         Ok(())
     }
