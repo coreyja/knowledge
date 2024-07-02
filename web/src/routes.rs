@@ -18,6 +18,6 @@ pub fn routes(app_state: AppState) -> axum::Router {
         .route("/signup", get(users::signup::get).post(users::signup::post))
         .route("/logout", get(users::login::logout))
         .route("/articles", post(users::add_url::insert_article_handler))
-        .route("/article/:article_id", get(article_detail))
+        .route("/articles/:article_id", get(article_detail))
         .with_state(app_state)
 }
