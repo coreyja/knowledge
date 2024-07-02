@@ -8,11 +8,9 @@ use auth::check_auth_status;
 use auth::get_user_id_from_session;
 
 mod sign_up;
-use db::urls::clean_raw_html;
-use db::urls::download_raw_html;
-use db::urls::persist_article;
-use db::urls::store_markdown;
-use db::urls::AddUrlOutcome;
+use cores::page_snapshot::clean_raw_html;
+use cores::page_snapshot::download_raw_html;
+use cores::urls::AddUrlOutcome;
 use sign_up::sign_up;
 
 use url::Url;
@@ -47,7 +45,7 @@ enum Command {
 #[tokio::main]
 async fn main() -> color_eyre::Result<()> {
     let args = KnowledgeArgs::parse();
-    let db_pool = db::setup_db_pool().await?;
+    let db_pool = cores::setup_db_pool().await?;
 
     match args.command {
         Command::Login => {
@@ -74,7 +72,6 @@ async fn main() -> color_eyre::Result<()> {
             let page = match outcome {
                 AddUrlOutcome::Created(page) | AddUrlOutcome::Existing(page) => page,
             };
-            persist_article(&db_pool, page).await   ?;
         }
     }
 

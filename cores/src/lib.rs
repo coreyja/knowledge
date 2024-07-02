@@ -2,7 +2,10 @@ pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
 pub use sqlx::PgPool;
 
+pub mod category;
+pub mod markdown;
 pub mod openai_utils;
+pub mod page_snapshot;
 pub mod urls;
 pub mod users;
 

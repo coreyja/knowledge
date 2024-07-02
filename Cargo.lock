@@ -461,7 +461,7 @@ version = "0.0.0"
 dependencies = [
  "clap",
  "color-eyre",
- "db",
+ "cores",
  "sqlx",
  "tokio",
  "url",
@@ -550,6 +550,22 @@ name = "core-foundation-sys"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
+
+[[package]]
+name = "cores"
+version = "0.0.0"
+dependencies = [
+ "color-eyre",
+ "html2md",
+ "openai",
+ "readability",
+ "reqwest 0.12.4",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "url",
+ "uuid",
+]
 
 [[package]]
 name = "cpufeatures"
@@ -643,22 +659,6 @@ dependencies = [
  "darling_core",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "db"
-version = "0.0.0"
-dependencies = [
- "color-eyre",
- "html2md",
- "openai",
- "readability",
- "reqwest 0.12.4",
- "sqlx",
- "tokio",
- "tracing",
- "url",
- "uuid",
 ]
 
 [[package]]
@@ -3912,7 +3912,7 @@ dependencies = [
  "chrono",
  "cja",
  "color-eyre",
- "db",
+ "cores",
  "futures",
  "maud",
  "miette",

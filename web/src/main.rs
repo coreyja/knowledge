@@ -9,7 +9,7 @@ mod templates;
 mod users;
 
 use cja::{app_state::AppState as AS, server::run_server};
-use db::setup_db_pool;
+use cores::setup_db_pool;
 use miette::IntoDiagnostic;
 
 use tracing::info;
