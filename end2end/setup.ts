@@ -1,14 +1,17 @@
 import { test as base } from "@playwright/test";
-// import { TodoPage } from "./todo-page";
+import { SignupPage } from "./pages/Signup";
 
-// Extend basic test by providing a "todoPage" fixture.
-const test = base.extend<{ todoPage: TodoPage }>({
-  todoPage: async ({ page }, use) => {
-    const todoPage = new TodoPage(page);
-    await todoPage.goto();
-    await todoPage.addToDo("item1");
-    await todoPage.addToDo("item2");
-    await use(todoPage);
-    await todoPage.removeAll();
+type Fixtures = {
+  loggedIn: SignupPage;
+};
+
+const test = base.extend<Fixtures>({
+  loggedIn: async ({ page }, use) => {
+    const signupPage = new SignupPage(page);
+    await signupPage.createUser();
+    await use(signupPage);
   },
 });
+
+export { test };
+export { expect } from "@playwright/test";

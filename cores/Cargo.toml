@@ -8,13 +8,20 @@ edition = "2021"
 [dependencies]
 color-eyre = { workspace = true }
 html2md = "0.2.14"
-openai = { version = "1.0.0-alpha.14", features = ["rustls"], default-features = false }
+openai.workspace = true
 readability = { version = "0.3.0", default-features = false }
 reqwest = { version = "0.12.4", features = [
-  "rustls-tls"
+  "rustls-tls",
 ], default-features = false }
 
-sqlx = { workspace = true, features = ["postgres", "runtime-tokio-rustls", "chrono", "migrate", "macros", "uuid"] }
+sqlx = { workspace = true, features = [
+  "postgres",
+  "runtime-tokio-rustls",
+  "chrono",
+  "migrate",
+  "macros",
+  "uuid",
+] }
 tracing = { workspace = true }
 url.workspace = true
 uuid = { workspace = true }

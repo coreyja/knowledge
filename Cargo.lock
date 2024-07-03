@@ -3805,6 +3805,7 @@ dependencies = [
  "cores",
  "futures",
  "maud",
+ "openai",
  "password-auth",
  "serde",
  "sqlx",

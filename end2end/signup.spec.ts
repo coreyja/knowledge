@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./setup";
 
 test("can create account and then login", async ({ page }) => {
   await page.goto("/signup");
@@ -13,6 +13,8 @@ test("can create account and then login", async ({ page }) => {
   await expect(page.getByText(`Welcome, ${username}`)).toBeVisible();
 
   await page.goto("/signout");
+
+  await expect(page.getByText(`Welcome, ${username}`)).not.toBeVisible();
 
   await page.goto("/login");
 

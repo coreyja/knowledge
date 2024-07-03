@@ -13,6 +13,9 @@ tracing = "0.1.40"
 url = "2.5.0"
 uuid = { version = "1.8.0", features = ["v4"] }
 chrono = { version = "0.4.23", default-features = false, features = ["serde"] }
+openai = { version = "1.0.0-alpha.14", features = [
+  "rustls",
+], default-features = false }
 
 [workspace.lints.clippy]
 pedantic = "deny"

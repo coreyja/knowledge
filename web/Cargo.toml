@@ -23,6 +23,7 @@ chrono.workspace = true
 thiserror = "1.0.61"
 password-auth = "1.0.0"
 url = "2.5.2"
+openai.workspace = true
 
 [lints]
 workspace = true
