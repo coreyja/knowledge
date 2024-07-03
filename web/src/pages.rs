@@ -2,7 +2,12 @@ use axum::{
     extract::{Path, State},
     response::{IntoResponse, Response},
 };
-use cores::{markdown::Markdown, page_snapshot::PageSnapShot, urls::Page, users::User};
+use cores::{
+    markdown::{self, Markdown},
+    page_snapshot::PageSnapShot,
+    urls::Page,
+    users::User,
+};
 
 use crate::{
     templates::{Template, TemplatedPage},
@@ -66,26 +71,33 @@ pub async fn article_detail(
     .fetch_optional(&state.db)
     .await?;
 
-    let markdown = if let Some(page_snapshot) = page_snapshot {
-        sqlx::query_as!(
+    let summary = if let Some(page_snapshot) = page_snapshot {
+        let markdown = sqlx::query_as!(
             Markdown,
             "SELECT * FROM markdown WHERE page_snapshot_id = $1",
             page_snapshot.page_snapshot_id
         )
         .fetch_optional(&state.db)
-        .await?
+        .await?;
+
+        if let Some(markdown) = markdown {
+            if markdown.summary.is_empty() {
+                None
+            } else {
+                Some(markdown.summary)
+            }
+        } else {
+            None
+        }
     } else {
         None
     };
-    info!("Fetched Article: {:?}", article);
-
-    info!("Fetched markdown MD: {:?}", markdown);
 
     Ok(t.render(maud::html! {
-        @if let Some(markdown) = markdown {
-            p { (markdown.summary) }
+        @if let Some(summary) = summary {
+            p { (summary) }
         } @else {
-            p { "Generating snapshot....." }
+            p data-controller="loader" { "Generating snapshot....." }
         }
     })
     .into_response())
