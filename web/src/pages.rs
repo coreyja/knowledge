@@ -3,11 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use cores::{
-    category::Category,
-    markdown::Markdown,
-    page_snapshot::PageSnapShot,
-    urls::Page,
-    users::User,
+    category::Category, markdown::Markdown, page_snapshot::PageSnapShot, urls::Page, users::User,
 };
 
 use crate::{
