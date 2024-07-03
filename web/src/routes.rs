@@ -2,6 +2,7 @@ use axum::routing::get;
 use axum::routing::post;
 
 use crate::pages::article_detail;
+use crate::pages::my_articles;
 use crate::{
     admin,
     pages::{home, landing, user_dashboard},
@@ -19,5 +20,6 @@ pub fn routes(app_state: AppState) -> axum::Router {
         .route("/logout", get(users::login::logout))
         .route("/articles", post(users::add_url::insert_article_handler))
         .route("/articles/:article_id", get(article_detail))
+        .route("/my_articles/:user_id", get(my_articles))
         .with_state(app_state)
 }

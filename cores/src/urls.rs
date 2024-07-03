@@ -81,20 +81,3 @@ pub async fn generate_and_store_summary(
 
     Ok(())
 }
-
-// pub async fn persist_article(pool: &PgPool, page: Page) -> color_eyre::Result<PageSnapShot> {
-//     let raw_html = download_raw_html(&page.url).await?;
-//     // let current_time = chrono::Utc::now();
-//     let url = Url::parse(&page.url)?;
-//     let cleaned_html = clean_raw_html(&raw_html, &url)?;
-
-//     let markdown_result = store_in_markdown_table(pool, result.page_snapshot_id, &cleaned_html).await?;
-//     generate_and_store_summary(
-//         pool,
-//         markdown_result.markdown_id,
-//         &markdown_result.content_md,
-//     )
-//     .await?;
-
-//     Ok(result)
-// }
