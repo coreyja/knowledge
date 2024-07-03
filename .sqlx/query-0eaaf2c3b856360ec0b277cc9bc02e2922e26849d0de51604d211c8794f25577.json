@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO Markdown (markdown_id, content_md) VALUES ($1, $2) RETURNING *",
+  "query": "INSERT INTO Markdown (markdown_id, page_snapshot_id, content_md) VALUES ($1, $2, $3) RETURNING *",
   "describe": {
     "columns": [
       {
@@ -17,10 +17,21 @@
         "ordinal": 2,
         "name": "content_md",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "summary",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "page_snapshot_id",
+        "type_info": "Uuid"
       }
     ],
     "parameters": {
       "Left": [
+        "Uuid",
         "Uuid",
         "Text"
       ]
@@ -28,8 +39,10 @@
     "nullable": [
       false,
       true,
+      false,
+      false,
       false
     ]
   },
-  "hash": "4392e5584abeb6f8eb80d4e449a9ade82d6908e25407a2fe8d90f1d9cc697d9d"
+  "hash": "0eaaf2c3b856360ec0b277cc9bc02e2922e26849d0de51604d211c8794f25577"
 }

@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE Markdown SET summary = $1 WHERE markdown_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e1526819c1c959b6d61068d916a5f78d0bd6ff02920991e270fb6d1a9736844f"
+}

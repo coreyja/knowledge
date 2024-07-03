@@ -1,7 +1,16 @@
-use axum::response::{IntoResponse, Response};
-use db::users::User;
+use axum::{
+    extract::{Path, State},
+    response::{IntoResponse, Response},
+};
+use cores::{markdown::Markdown, page_snapshot::PageSnapShot, urls::Page, users::User};
 
-use crate::templates::{Template, TemplatedPage};
+use crate::{
+    templates::{Template, TemplatedPage},
+    AppState, WebResult,
+};
+
+use tracing::info;
+use uuid::Uuid;
 
 pub async fn home(t: Template, user: Option<User>) -> Response {
     match user {
@@ -35,4 +44,49 @@ pub async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
             input type="submit" value="Submit";
         }
     })
+}
+
+#[axum::debug_handler(state = AppState)]
+pub async fn article_detail(
+    t: Template,
+    Path(article_id): Path<Uuid>,
+    State(state): State<AppState>,
+) -> WebResult<Response> {
+    info!("Fetching article_ID: {}", article_id);
+
+    let article = sqlx::query_as!(Page, "SELECT * FROM pages WHERE page_id = $1", article_id)
+        .fetch_one(&state.db)
+        .await?;
+
+    let page_snapshot = sqlx::query_as!(
+        PageSnapShot,
+        "SELECT * FROM pagesnapshot WHERE page_id = $1 ORDER BY fetched_at DESC LIMIT 1",
+        article.page_id
+    )
+    .fetch_optional(&state.db)
+    .await?;
+
+    let markdown = if let Some(page_snapshot) = page_snapshot {
+        sqlx::query_as!(
+            Markdown,
+            "SELECT * FROM markdown WHERE page_snapshot_id = $1",
+            page_snapshot.page_snapshot_id
+        )
+        .fetch_optional(&state.db)
+        .await?
+    } else {
+        None
+    };
+    info!("Fetched Article: {:?}", article);
+
+    info!("Fetched markdown MD: {:?}", markdown);
+
+    Ok(t.render(maud::html! {
+        @if let Some(markdown) = markdown {
+            p { (markdown.summary) }
+        } @else {
+            p { "Generating snapshot....." }
+        }
+    })
+    .into_response())
 }

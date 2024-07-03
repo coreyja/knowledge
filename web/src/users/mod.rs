@@ -7,7 +7,7 @@ use cja::app_state::AppState as _;
 
 use thiserror::Error;
 
-pub use db::users::User;
+pub use cores::users::User;
 
 use crate::{
     sessions::{Session, SessionError},

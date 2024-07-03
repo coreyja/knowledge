@@ -1,5 +1,5 @@
-use db::users::get_username_by_id;
-use db::PgPool;
+use cores::users::get_username_by_id;
+use cores::PgPool;
 use std::fs;
 use std::io::Read;
 use std::io::Write;

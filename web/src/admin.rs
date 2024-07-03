@@ -6,7 +6,7 @@ use axum::{
 };
 use cja::app_state::AppState as _;
 use color_eyre::eyre::Context;
-use db::users::User;
+use cores::users::User;
 
 use crate::{err, templates::Template, users::ExtractUserError, AppState, WebResult};
 
