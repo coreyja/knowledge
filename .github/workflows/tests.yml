@@ -33,6 +33,8 @@ jobs:
         run: cargo install sqlx-cli --no-default-features --features rustls,postgres
       - name: Build Server
         run: cd .. && cargo build --bin web
+      - name: Prepare DB
+        run: ../scripts/prepare_test_db.sh
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
