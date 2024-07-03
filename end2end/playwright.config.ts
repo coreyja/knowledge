@@ -75,7 +75,7 @@ export default defineConfig({
         RUST_LOG: "debug",
         HTTPS: "false",
         OPEN_AI_URL: "http://localhost:3001",
-        OPEN_AI_API_TOKEN: "FAKE",
+        OPEN_AI_API_KEY: "FAKE",
       },
       url: "http://localhost:3000",
       reuseExistingServer: !isCI,
