@@ -10,7 +10,7 @@ pub struct PageSnapShot {
     pub page_id: Uuid,
     pub raw_html: String,
     pub cleaned_html: String,
-    pub fetched_at: Option<chrono::DateTime<chrono::Utc>>
+    pub fetched_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 pub async fn download_raw_html(url: &str) -> color_eyre::Result<String> {

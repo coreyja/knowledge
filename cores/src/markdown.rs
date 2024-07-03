@@ -12,7 +12,6 @@ pub struct Markdown {
     pub title: Option<String>,
     pub content_md: String,
     pub summary: String,
-
 }
 
 pub async fn store_in_markdown_table(
