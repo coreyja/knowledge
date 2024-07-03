@@ -21,7 +21,7 @@ pub async fn insert_article_handler(
     user: User,
     Form(form): Form<ArticleForm>,
 ) -> WebResult<impl IntoResponse> {
-    info!("Received request to insert article: {}", form.url); // Log the received URL
+    info!("Received request to insert article: {}", form.url);
 
     let url = form.url;
     let user_id = user.user_id;
