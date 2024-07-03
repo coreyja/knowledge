@@ -46,6 +46,14 @@ pub async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
             input type="submit" value="Submit";
         }
 
+        h3 {"My Articles"}
+        p {
+            @let url = format!("/my_articles/{}", user.user_id);
+            a href=(url) { "click" }
+        }
+
+
+
         h3 {
             a href="/articles" { "My Articles" }
         }
