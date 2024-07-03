@@ -46,6 +46,14 @@ pub async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
             input type="submit" value="Submit";
         }
 
+        h3 {"My Articles"}
+        p {
+            @let url = format!("/my_articles/{}", user.user_id);
+            a href=(url) { "click" }
+        }
+
+
+
         h3 {
             a href="/articles" { "My Articles" }
         }
@@ -135,6 +143,38 @@ pub async fn my_articles(
             }
             @for article in my_articles {
                 @let article_url = format!("/articles/{}", article.page_id);
+                tr {
+                    td { (article.url) }
+                    td {
+                        a href=(article_url) { "View" }
+                    }
+                }
+            }
+        }
+    })
+    .into_response())
+}
+
+#[axum::debug_handler(state = AppState)]
+pub async fn my_articles(
+    t: Template,
+    Path(user_id): Path<Uuid>,
+    State(state): State<AppState>,
+) -> WebResult<Response> {
+    info!("Received request for user_id: {}", user_id);
+    let my_articles = sqlx::query_as!(Page, "SELECT * FROM pages WHERE user_id = $1", user_id)
+        .fetch_all(&state.db)
+        .await?;
+
+    Ok(t.render(maud::html! {
+        h1 { "My Articles" }
+        table {
+            tr {
+                th { "URL" }
+                th { "Actions" }
+            }
+            @for article in my_articles {
+                @let article_url = format!("/articles/{}", article.url);
                 tr {
                     td { (article.url) }
                     td {

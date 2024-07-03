@@ -23,5 +23,6 @@ pub fn routes(app_state: AppState) -> axum::Router {
             post(users::add_url::insert_article_handler).get(my_articles),
         )
         .route("/articles/:article_id", get(article_detail))
+        .route("/my_articles/:user_id", get(my_articles))
         .with_state(app_state)
 }
