@@ -1,5 +1,5 @@
 use color_eyre::eyre::Context;
-use db::{users::create_user, PgPool};
+use cores::{users::create_user, PgPool};
 use std::path::Path;
 
 use crate::auth::{check_auth_status, persist_auth_session};

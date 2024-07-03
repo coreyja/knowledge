@@ -452,9 +452,10 @@ version = "0.0.0"
 dependencies = [
  "clap",
  "color-eyre",
- "db",
+ "cores",
  "sqlx",
  "tokio",
+ "url",
  "uuid",
 ]
 
@@ -540,6 +541,22 @@ name = "core-foundation-sys"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
+
+[[package]]
+name = "cores"
+version = "0.0.0"
+dependencies = [
+ "color-eyre",
+ "html2md",
+ "openai",
+ "readability",
+ "reqwest 0.12.4",
+ "sqlx",
+ "tokio",
+ "tracing",
+ "url",
+ "uuid",
+]
 
 [[package]]
 name = "cpufeatures"
@@ -633,22 +650,6 @@ dependencies = [
  "darling_core",
  "quote",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "db"
-version = "0.0.0"
-dependencies = [
- "color-eyre",
- "html2md",
- "openai",
- "readability",
- "reqwest 0.12.4",
- "sqlx",
- "tokio",
- "tracing",
- "url",
- "uuid",
 ]
 
 [[package]]
@@ -3626,9 +3627,9 @@ dependencies = [
 
 [[package]]
 name = "url"
-version = "2.5.0"
+version = "2.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "31e6302e3bb753d46e83516cae55ae196fc0c309407cf11ab35cc51a4c2a4633"
+checksum = "22784dbdf76fdde8af1aeda5622b546b422b6fc585325248a2bf9f5e41e94d6c"
 dependencies = [
  "form_urlencoded",
  "idna",
@@ -3801,7 +3802,7 @@ dependencies = [
  "chrono",
  "cja",
  "color-eyre",
- "db",
+ "cores",
  "futures",
  "maud",
  "password-auth",
@@ -3811,6 +3812,7 @@ dependencies = [
  "tokio",
  "tower-http",
  "tracing",
+ "url",
  "uuid",
 ]
 

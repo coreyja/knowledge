@@ -8,7 +8,7 @@ use cja::{
     tower_cookies::{Cookie, Cookies},
 };
 
-use db::users::User;
+use cores::users::User;
 
 use password_auth::verify_password;
 

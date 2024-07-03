@@ -4,7 +4,7 @@ use axum::{
     Form,
 };
 use cja::app_state::AppState as _;
-use db::users::User;
+use cores::users::User;
 
 use password_auth::generate_hash;
 

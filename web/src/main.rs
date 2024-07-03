@@ -10,7 +10,7 @@ mod users;
 
 use cja::{app_state::AppState as AS, server::run_server};
 use color_eyre::eyre::Context;
-use db::setup_db_pool;
+use cores::setup_db_pool;
 
 use tracing::info;
 

@@ -1,5 +1,5 @@
 use color_eyre::Result;
-use db::urls::{add_url, AddUrlOutcome, PgPool};
+use cores::urls::{add_url, AddUrlOutcome, PgPool};
 use uuid::Uuid;
 
 use crate::check_auth_status;
