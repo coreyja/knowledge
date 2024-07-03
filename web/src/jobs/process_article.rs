@@ -52,7 +52,7 @@ impl Job<AppState> for ProcessArticle {
             .await
             .unwrap();
 
-        generate_categories(&cleaned_html).await.unwrap();
+        generate_categories(&markdown.summary).await.unwrap();
 
         Ok(())
     }
