@@ -32,7 +32,9 @@ jobs:
       - name: Install SQLx CLI
         run: cargo install sqlx-cli --no-default-features --features rustls,postgres
       - name: Build Server
-        run: cd .. && cargo build --bin web
+        run: cargo build --bin web
+      - name: Build OpenAI Fixture
+        run: cargo build -p fixtures --bin openai
       - name: Prepare DB
         run: ../scripts/prepare_test_db.sh
       - uses: actions/setup-node@v4

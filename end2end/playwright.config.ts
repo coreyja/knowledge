@@ -67,14 +67,23 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: "../scripts/prepare_test_db.sh && cd ../web && cargo run",
-    env: {
-      DATABASE_URL: `${process.env.DATABASE_URL}_test`,
-      RUST_LOG: "debug",
-      HTTPS: "false",
+  webServer: [
+    {
+      command: "../scripts/prepare_test_db.sh && cargo run --bin web",
+      env: {
+        DATABASE_URL: `${process.env.DATABASE_URL}_test`,
+        RUST_LOG: "debug",
+        HTTPS: "false",
+        OPENAI_URL: "http://localhost:3001",
+      },
+      url: "http://localhost:3000",
+      reuseExistingServer: !isCI,
     },
-    url: "http://localhost:3000",
-    reuseExistingServer: !isCI,
-  },
+    {
+      command: "cd ../fixtures && cargo run --bin=openai",
+      env: {
+        PORT: "3001",
+      },
+    },
+  ],
 });
