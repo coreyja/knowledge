@@ -9,8 +9,8 @@ mod templates;
 mod users;
 
 use cja::{app_state::AppState as AS, server::run_server};
+use color_eyre::eyre::Context;
 use db::setup_db_pool;
-use miette::IntoDiagnostic;
 
 use tracing::info;
 
@@ -36,25 +36,22 @@ impl AS for AppState {
     }
 }
 
-fn main() -> miette::Result<()> {
+fn main() -> cja::Result<()> {
     let _sentry_guard = cja::setup::setup_sentry();
 
     tokio::runtime::Builder::new_multi_thread()
         .worker_threads(4)
         .enable_all()
-        .build()
-        .into_diagnostic()?
+        .build()?
         .block_on(async { _main().await })
 }
 
-async fn _main() -> miette::Result<()> {
+async fn _main() -> cja::Result<()> {
     cja::setup::setup_tracing("knowledge")?;
 
-    let db_pool = setup_db_pool()
-        .await
-        .map_err(|e| miette::miette!("Setup DB Failed: {e}"))?;
+    let db_pool = setup_db_pool().await.context("Failed to setup DB Pool")?;
 
-    let cookie_key = cja::server::cookies::CookieKey::from_env_or_generate().into_diagnostic()?;
+    let cookie_key = cja::server::cookies::CookieKey::from_env_or_generate()?;
 
     let app_state = AppState {
         db: db_pool,
@@ -74,9 +71,7 @@ async fn _main() -> miette::Result<()> {
     }
     info!("Tasks Spawned");
 
-    futures::future::try_join_all(futures)
-        .await
-        .into_diagnostic()?;
+    futures::future::try_join_all(futures).await?;
 
     Ok(())
 }

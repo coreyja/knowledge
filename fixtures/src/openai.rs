@@ -5,11 +5,11 @@ use color_eyre::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    setup_tracing("openai_fixture").unwrap();
+    setup_tracing("openai_fixture")?;
 
     let app = Router::new().route("/v1/chat/completions", any(mock_chat_completions));
 
-    run_server(app).await.unwrap();
+    run_server(app).await?;
 
     Ok(())
 }

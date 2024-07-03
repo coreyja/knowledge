@@ -1,10 +1,11 @@
+use color_eyre::eyre::Context;
 use color_eyre::Result;
 use openai::chat::{ChatCompletionBuilder, ChatCompletionMessage, ChatCompletionMessageRole};
 use openai::embeddings::Embeddings;
 use std::env;
 
 async fn generate_openai_response(prompt: &str, max_tokens: u64) -> Result<String> {
-    let api_key = env::var("OPEN_AI_API_KEY").expect("OPEN_AI_API_KEY must be set");
+    let api_key = env::var("OPEN_AI_API_KEY").context("OPEN_AI_API_KEY must be set")?;
     openai::set_key(api_key);
 
     let messages = vec![ChatCompletionMessage {

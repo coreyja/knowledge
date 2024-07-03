@@ -1,5 +1,4 @@
 use cja::{app_state::AppState as _, jobs::Job};
-use miette::IntoDiagnostic;
 
 use crate::AppState;
 
@@ -10,7 +9,7 @@ pub struct Cleanup;
 impl Job<AppState> for Cleanup {
     const NAME: &'static str = "sessions::cleanup";
 
-    async fn run(&self, app_state: AppState) -> miette::Result<()> {
+    async fn run(&self, app_state: AppState) -> cja::Result<()> {
         let db = app_state.db();
 
         sqlx::query!(
@@ -20,8 +19,7 @@ impl Job<AppState> for Cleanup {
             "#,
         )
         .execute(db)
-        .await
-        .into_diagnostic()?;
+        .await?;
 
         Ok(())
     }

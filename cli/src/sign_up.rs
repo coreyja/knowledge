@@ -1,3 +1,4 @@
+use color_eyre::eyre::Context;
 use db::{users::create_user, PgPool};
 use std::path::Path;
 
@@ -16,7 +17,7 @@ pub async fn sign_up(pool: &PgPool, username_opt: Option<String>) -> color_eyre:
         let mut input = String::new();
         std::io::stdin()
             .read_line(&mut input)
-            .expect("Failed to read line");
+            .context("Failed to read line")?;
         input.trim().to_string()
     };
 
