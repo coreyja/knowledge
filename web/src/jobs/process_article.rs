@@ -42,7 +42,7 @@ impl Job<AppState> for ProcessArticle {
         )
         .fetch_one(db)
         .await
-        .unwrap();
+        .unwrap(); // Insert a new page snapshot into the database and return the inserted record.
 
         let markdown = store_in_markdown_table(db, page_snapshot).await.unwrap();
         let markdown_id = markdown.markdown_id;

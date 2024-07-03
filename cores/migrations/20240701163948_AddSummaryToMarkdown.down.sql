@@ -1,2 +1,2 @@
 -- Add migration script here
-ALTER TABLE markdown_content DROP COLUMN summary;
+ALTER TABLE markdown DROP COLUMN summary;
