@@ -3,7 +3,11 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use cores::{
-    category::Category, markdown::Markdown, page_snapshot::PageSnapShot, urls::Page, users::User,
+    category::Category,
+    markdown::Markdown,
+    page_snapshot::PageSnapShot,
+    urls::Page,
+    users::User,
 };
 
 use crate::{
@@ -46,14 +50,6 @@ pub async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
             input type="submit" value="Submit";
         }
 
-        h3 {"My Articles"}
-        p {
-            @let url = format!("/my_articles/{}", user.user_id);
-            a href=(url) { "click" }
-        }
-
-
-
         h3 {
             a href="/articles" { "My Articles" }
         }
@@ -88,6 +84,7 @@ pub async fn article_detail(
 
     let markdown = if let Some(page_snapshot) = page_snapshot {
         let markdown = sqlx::query_as!(
+        let markdown = sqlx::query_as!(
             Markdown,
             "SELECT * FROM markdown WHERE page_snapshot_id = $1",
             page_snapshot.page_snapshot_id
@@ -107,9 +104,35 @@ pub async fn article_detail(
         } else {
             None
         }
+        .await?;
+
+        if let Some(markdown) = markdown {
+            let categories = sqlx::query_as!(
+                Category,
+                "SELECT * FROM category WHERE markdown_id = $1",
+                markdown.markdown_id
+            )
+            .fetch_all(&state.db)
+            .await?;
+            Some((markdown, categories))
+        } else {
+            None
+        }
     } else {
         None
     };
+
+    let rendered_html = if let Some((markdown, categories)) = markdown {
+        maud::html! {
+            ul {
+                @for category in categories {
+                    li { b { "Category: " } (category.category.unwrap_or("No category".to_string())) }
+                }
+            }
+            p { b { "Summary: " }(markdown.summary.as_str()) }
+        }
+    } else {
+        maud::html! {
 
     let rendered_html = if let Some((markdown, categories)) = markdown {
         maud::html! {
