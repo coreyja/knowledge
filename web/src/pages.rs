@@ -174,12 +174,10 @@ pub async fn my_articles(
                 th { "Actions" }
             }
             @for article in my_articles {
-                @let article_url = format!("/articles/{}", article.url);
+                @let article_url = format!("/articles/{}", article.page_id);
                 tr {
                     td { (article.url) }
-                    td {
-                        a href=(article_url) { "View" }
-                    }
+                    td { a href=(article_url) { "View" } }
                 }
             }
         }
