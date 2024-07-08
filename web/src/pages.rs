@@ -50,6 +50,10 @@ pub async fn user_dashboard(t: Template, user: User) -> TemplatedPage {
             a href="/articles" { "My Articles" }
         }
 
+        h3 {
+            a href="/categories" { "My Categories" }
+        }
+
 
     })
 }
@@ -143,6 +147,7 @@ pub async fn article_detail(
 
     Ok(t.render(rendered_html).into_response())
 }
+
 pub async fn my_articles(
     t: Template,
     State(state): State<AppState>,
@@ -167,6 +172,73 @@ pub async fn my_articles(
                     td {
                         a href=(article_url) { "View" }
                     }
+                }
+            }
+        }
+    })
+    .into_response())
+}
+
+#[axum::debug_handler(state = AppState)]
+pub async fn my_categories(
+    t: Template,
+    State(state): State<AppState>,
+    user: User,
+) -> WebResult<Response> {
+    info!("Fetching categories for user_id: {}", user.user_id);
+
+    let categories = sqlx::query!(
+        "SELECT * FROM category",
+    )
+    .fetch_all(&state.db)
+    .await?;
+
+    Ok(t.render(maud::html! {
+        h1 { "My Categories" }
+        ul {
+            @for category in categories {
+                @let category_name = category.category.unwrap_or("No category".to_string());
+                li {
+                    a href=(format!("/categories/{}", category.category_id)) { (category_name) }
+                }
+            }
+        }
+    })
+    .into_response())
+}
+
+#[axum::debug_handler(state = AppState)]
+pub async fn articles_by_category(
+    t: Template,
+    Path(category_id): Path<Uuid>,
+    State(state): State<AppState>,
+    user: User,
+) -> WebResult<Response> {
+    info!("Fetching articles for category_id: {}", category_id);
+
+    let articles = sqlx::query!(
+        r#"
+        SELECT m.summary, p.url
+        FROM category c
+        JOIN categorymarkdown cm ON c.category_id = cm.category_id
+        JOIN markdown m ON cm.markdown_id = m.markdown_id
+        JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id
+        JOIN pages p ON ps.page_id = p.page_id
+        WHERE c.category_id = $1 AND p.user_id = $2
+        "#,
+        category_id,
+        user.user_id
+    )
+    .fetch_all(&state.db)
+    .await?;
+
+    Ok(t.render(maud::html! {
+        h1 { "Articles in Category" }
+        ul {
+            @for article in articles {
+                li {
+                    a href=(article.url) { (article.url) }
+                    p { (article.summary) }
                 }
             }
         }

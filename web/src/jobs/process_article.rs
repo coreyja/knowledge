@@ -54,7 +54,7 @@ impl Job<AppState> for ProcessArticle {
             .unwrap();
 
         generate_categories(&markdown.summary).await.unwrap();
-
+        
         Ok(())
     }
 }
