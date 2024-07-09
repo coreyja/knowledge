@@ -244,7 +244,7 @@ pub async fn articles_by_category(
         ul {
             @for article in articles {
                 li {
-                    a href=(format!("/articles/{}", article.page_id)) 
+                    a href=(format!("/articles/{}", article.page_id))
                     p { b { "URL: " } (article.url) }
                     p { b { "Category: " } (article.category.as_deref().unwrap_or("No category")) }
                     p { b { "Summary: " } (article.summary) }
