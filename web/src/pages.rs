@@ -121,7 +121,6 @@ pub async fn article_detail(
     Ok(t.render(rendered_html).into_response())
 }
 
-
 pub async fn my_articles(
     t: Template,
     State(state): State<AppState>,
