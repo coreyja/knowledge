@@ -1,13 +1,16 @@
--- Drop the existing primary key constraint
-ALTER TABLE Category DROP CONSTRAINT IF EXISTS category_pkey;
+-- Add category_id column ONLY if it doesn't exist
+ALTER TABLE Category ADD COLUMN IF NOT EXISTS category_id UUID DEFAULT gen_random_uuid();
 
--- Ensure Category table has category_id column with a default UUID value
-ALTER TABLE Category ADD COLUMN IF NOT EXISTS category_id UUID DEFAULT gen_random_uuid() NOT NULL;
+-- Populates it with unique UUIDs for existing rows.
+UPDATE Category SET category_id = gen_random_uuid() WHERE category_id IS NULL;
 
--- Set category_id as the new primary key
-ALTER TABLE Category ADD CONSTRAINT category_pkey PRIMARY KEY (category_id);
+-- Makes it NOT NULL after ensuring all rows have a value.
+ALTER TABLE Category ALTER COLUMN category_id SET NOT NULL;
 
--- Add migration script here
+-- Add a unique constraint on category_id
+ALTER TABLE Category ADD CONSTRAINT category_id_unique UNIQUE (category_id);
+
+
 CREATE TABLE IF NOT EXISTS CategoryMarkdown (
     category_id UUID NOT NULL REFERENCES Category(category_id),
     markdown_id UUID REFERENCES Markdown(markdown_id),
