@@ -1,5 +1,6 @@
 use crate::AppState;
 use cja::{app_state::AppState as _, jobs::Job};
+use cores::openai_utils::generate_categories;
 use miette::IntoDiagnostic;
 
 use url::Url;
@@ -42,7 +43,7 @@ impl Job<AppState> for ProcessArticle {
         )
         .fetch_one(db)
         .await
-        .unwrap(); // Insert a new page snapshot into the database and return the inserted record.
+        .unwrap();
 
         let markdown = store_in_markdown_table(db, page_snapshot).await.unwrap();
         let markdown_id = markdown.markdown_id;
@@ -50,6 +51,8 @@ impl Job<AppState> for ProcessArticle {
         generate_and_store_summary(db, markdown_id, &cleaned_html)
             .await
             .unwrap();
+
+        generate_categories(&markdown.summary).await.unwrap();
 
         Ok(())
     }
