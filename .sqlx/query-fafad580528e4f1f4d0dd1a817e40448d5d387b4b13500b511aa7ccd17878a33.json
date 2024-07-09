@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT DISTINCT c.* \n     FROM category c\n     JOIN categorymarkdown cm ON c.category_id = cm.category_id\n     JOIN markdown m ON cm.markdown_id = m.markdown_id\n     JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id\n     JOIN pages p ON ps.page_id = p.page_id\n     WHERE p.user_id = $1",
+  "query": "SELECT DISTINCT c.* \n        FROM category c\n        JOIN categorymarkdown cm ON c.category_id = cm.category_id\n        JOIN markdown m ON cm.markdown_id = m.markdown_id\n        JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id\n        JOIN pages p ON ps.page_id = p.page_id\n        WHERE p.user_id = $1",
   "describe": {
     "columns": [
       {
@@ -36,5 +36,5 @@
       false
     ]
   },
-  "hash": "8f51be211b35ca010dd9e8bbb347b37def689c2624423886809a50ff5c0c62e8"
+  "hash": "fafad580528e4f1f4d0dd1a817e40448d5d387b4b13500b511aa7ccd17878a33"
 }
