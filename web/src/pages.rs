@@ -187,11 +187,9 @@ pub async fn my_categories(
 ) -> WebResult<Response> {
     info!("Fetching categories for user_id: {}", user.user_id);
 
-    let categories = sqlx::query!(
-        "SELECT * FROM category",
-    )
-    .fetch_all(&state.db)
-    .await?;
+    let categories = sqlx::query!("SELECT * FROM category",)
+        .fetch_all(&state.db)
+        .await?;
 
     Ok(t.render(maud::html! {
         h1 { "My Categories" }

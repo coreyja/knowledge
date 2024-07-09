@@ -5,7 +5,6 @@ use crate::category::store_in_category_table;
 use crate::openai_utils::generate_categories;
 use crate::page_snapshot::PageSnapShot;
 
-
 #[derive(sqlx::FromRow, Debug, Clone)]
 pub struct Markdown {
     pub markdown_id: Uuid,
@@ -15,12 +14,12 @@ pub struct Markdown {
     pub summary: String,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub struct CategoryMarkdown {
     pub markdown_id: Uuid,
     pub category_id: Uuid,
 }
-
 
 pub async fn store_in_markdown_table(
     pool: &PgPool,
@@ -56,5 +55,4 @@ pub async fn store_in_markdown_table(
     println!("Category markdown result: {category_markdown_result:?}");
 
     Ok(markdown_result)
-
 }
