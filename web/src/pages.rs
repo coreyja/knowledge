@@ -80,26 +80,11 @@ pub async fn article_detail(
 
     let markdown = if let Some(page_snapshot) = page_snapshot {
         let markdown = sqlx::query_as!(
-        let markdown = sqlx::query_as!(
             Markdown,
             "SELECT * FROM markdown WHERE page_snapshot_id = $1",
             page_snapshot.page_snapshot_id
         )
         .fetch_optional(&state.db)
-        .await?;
-
-        if let Some(markdown) = markdown {
-            let categories = sqlx::query_as!(
-                Category,
-                "SELECT * FROM category WHERE markdown_id = $1",
-                markdown.markdown_id
-            )
-            .fetch_all(&state.db)
-            .await?;
-            Some((markdown, categories))
-        } else {
-            None
-        }
         .await?;
 
         if let Some(markdown) = markdown {
@@ -129,24 +114,13 @@ pub async fn article_detail(
         }
     } else {
         maud::html! {
-
-    let rendered_html = if let Some((markdown, categories)) = markdown {
-        maud::html! {
-            ul {
-                @for category in categories {
-                    li { b { "Category: " } (category.category.unwrap_or("No category".to_string())) }
-                }
-            }
-            p { b { "Summary: " }(markdown.summary.as_str()) }
-        }
-    } else {
-        maud::html! {
             p { "Generating snapshot....." }
         }
     };
 
     Ok(t.render(rendered_html).into_response())
 }
+
 
 pub async fn my_articles(
     t: Template,
