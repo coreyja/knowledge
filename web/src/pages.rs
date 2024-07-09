@@ -102,15 +102,15 @@ pub async fn article_detail(
     } else {
         None
     };
-
     let rendered_html = if let Some((markdown, categories)) = markdown {
         maud::html! {
             ul {
                 @for category in categories {
-                    li { b { "Category: " } (category.category.unwrap_or("No category".to_string())) }
+                    li { b { "Category: " } (category.category.as_deref().unwrap_or("No category")) }
                 }
             }
-            p { b { "Summary: " }(markdown.summary.as_str()) }
+            h1 { b { "Title: " } (markdown.title.as_deref().unwrap_or("")) }
+            p { b { "Summary: " } (markdown.summary) }
         }
     } else {
         maud::html! {
@@ -198,7 +198,7 @@ pub async fn articles_by_category(
 
     let articles = sqlx::query!(
         r#"
-        SELECT m.summary, p.url, p.page_id, c.category
+        SELECT m.summary, p.url, p.page_id, c.category, m.title
         FROM category c
         JOIN categorymarkdown cm ON c.category_id = cm.category_id
         JOIN markdown m ON cm.markdown_id = m.markdown_id
@@ -217,8 +217,8 @@ pub async fn articles_by_category(
         ul {
             @for article in articles {
                 li {
-                    a href=(format!("/articles/{}", article.page_id))
-                    p { b { "URL: " } (article.url) }
+                    a href=(format!("/articles/{}", article.page_id)) { (article.url) }
+                    p { b { "Title: " } (article.title.as_deref().unwrap_or("No title")) }
                     p { b { "Category: " } (article.category.as_deref().unwrap_or("No category")) }
                     p { b { "Summary: " } (article.summary) }
                 }
