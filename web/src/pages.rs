@@ -187,9 +187,18 @@ pub async fn my_categories(
 ) -> WebResult<Response> {
     info!("Fetching categories for user_id: {}", user.user_id);
 
-    let categories = sqlx::query!("SELECT * FROM category",)
-        .fetch_all(&state.db)
-        .await?;
+    let categories = sqlx::query!(
+        "SELECT DISTINCT c.* 
+     FROM category c
+     JOIN categorymarkdown cm ON c.category_id = cm.category_id
+     JOIN markdown m ON cm.markdown_id = m.markdown_id
+     JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id
+     JOIN pages p ON ps.page_id = p.page_id
+     WHERE p.user_id = $1",
+        user.user_id
+    )
+    .fetch_all(&state.db)
+    .await?;
 
     Ok(t.render(maud::html! {
         h1 { "My Categories" }
