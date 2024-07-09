@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE Sessions SET logged_out_at = now(), updated_at = now() WHERE session_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3db897204e31cbef57a56ec69225c317165a28bde0bc2e530393862fbdaf4dff"
+}
