@@ -50,7 +50,7 @@ impl Job<AppState> for ProcessArticle {
         generate_and_store_summary(db, markdown_id, &cleaned_html).await?;
 
         generate_categories(&markdown.summary).await.unwrap();
-        
+
         Ok(())
     }
 }
