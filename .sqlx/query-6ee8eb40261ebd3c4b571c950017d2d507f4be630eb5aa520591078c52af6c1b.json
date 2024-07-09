@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM category WHERE markdown_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "markdown_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "category",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "embedding",
+        "type_info": "Float8Array"
+      },
+      {
+        "ordinal": 3,
+        "name": "category_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      false
+    ]
+  },
+  "hash": "6ee8eb40261ebd3c4b571c950017d2d507f4be630eb5aa520591078c52af6c1b"
+}
