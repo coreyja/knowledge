@@ -190,7 +190,7 @@ pub async fn my_categories(
     let categories = sqlx::query!(
         "SELECT DISTINCT c.* 
         FROM category c
-        JOIN categorymarkdown cm ON c.category_id = cm.category_id
+        JOIN categorymarkdown cm USING (category_id)
         JOIN markdown m ON cm.markdown_id = m.markdown_id
         JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id
         JOIN pages p ON ps.page_id = p.page_id
