@@ -1,7 +1,6 @@
 use crate::AppState;
 use cja::{app_state::AppState as _, jobs::Job};
 use cores::openai_utils::generate_categories;
-use cores::openai_utils::generate_categories;
 use miette::IntoDiagnostic;
 
 use url::Url;
