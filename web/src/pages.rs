@@ -189,12 +189,12 @@ pub async fn my_categories(
 
     let categories = sqlx::query!(
         "SELECT DISTINCT c.* 
-        FROM category c
-        JOIN categorymarkdown cm USING (category_id)
-        JOIN markdown m ON cm.markdown_id = m.markdown_id
-        JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id
-        JOIN pages p ON ps.page_id = p.page_id
-        WHERE p.user_id = $1",
+         FROM category c
+         JOIN categorymarkdown cm ON c.category_id = cm.category_id
+         JOIN markdown m ON cm.markdown_id = m.markdown_id
+         JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id
+         JOIN pages p ON ps.page_id = p.page_id
+         WHERE p.user_id = $1",
         user.user_id
     )
     .fetch_all(&state.db)
@@ -225,7 +225,7 @@ pub async fn articles_by_category(
 
     let articles = sqlx::query!(
         r#"
-        SELECT m.summary, p.url
+        SELECT m.summary, p.url, p.page_id, c.category
         FROM category c
         JOIN categorymarkdown cm ON c.category_id = cm.category_id
         JOIN markdown m ON cm.markdown_id = m.markdown_id
@@ -244,8 +244,10 @@ pub async fn articles_by_category(
         ul {
             @for article in articles {
                 li {
-                    a href=(article.url) { (article.url) }
-                    p { (article.summary) }
+                    a href=(format!("/articles/{}", article.page_id)) 
+                    p { b { "URL: " } (article.url) }
+                    p { b { "Category: " } (article.category.as_deref().unwrap_or("No category")) }
+                    p { b { "Summary: " } (article.summary) }
                 }
             }
         }
