@@ -73,6 +73,21 @@ pub async fn do_login_command(
     state: AppState,
     json: SlackCommandRequest,
 ) -> color_eyre::Result<Json<Value>> {
+    let existing_username = sqlx::query!(
+        "SELECT user_name FROM SlackUserAssociation JOIN Users USING (user_id) WHERE slack_user_id = $1",
+        json.user_id
+    )
+    .fetch_optional(state.db())
+    .await?;
+
+    if let Some(username) = existing_username {
+        let username = username.user_name;
+        return Ok(Json(serde_json::json!({
+            "response_type": "in_channel",
+            "text": format!("You are already logged in as {username}")
+        })));
+    }
+
     let slack_user_link = sqlx::query!(
         "
     INSERT INTO SlackUserLink (slack_user_id, slack_username) values ($1, $2) RETURNING *",
