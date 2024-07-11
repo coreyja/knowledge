@@ -83,6 +83,7 @@ pub async fn article_detail(
         .fetch_optional(&state.db)
         .await?;
 
+        
         if let Some(markdown) = markdown {
             let categories = sqlx::query_as!(
                 Category,
