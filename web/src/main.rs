@@ -20,6 +20,7 @@ type WebResult<T, E = err::Error> = Result<T, E>;
 struct AppState {
     db: sqlx::PgPool,
     cookie_key: cja::server::cookies::CookieKey,
+    base_url: String,
 }
 
 impl AS for AppState {
@@ -55,10 +56,13 @@ async fn _main() -> miette::Result<()> {
         .map_err(|e| miette::miette!("Setup DB Failed: {e}"))?;
 
     let cookie_key = cja::server::cookies::CookieKey::from_env_or_generate().into_diagnostic()?;
+    let base_url =
+        std::env::var("BASE_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
 
     let app_state = AppState {
         db: db_pool,
         cookie_key,
+        base_url,
     };
 
     let app = routes::routes(app_state.clone());

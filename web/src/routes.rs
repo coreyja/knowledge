@@ -5,9 +5,11 @@ use axum::routing::post;
 use axum::Form;
 use axum::Json;
 use cja::app_state::AppState as _;
+use cja::jobs::Job as _;
 use cores::users::User;
 use serde_json::Value;
 
+use crate::jobs::process_article::ProcessArticle;
 use crate::pages::article_detail;
 use crate::pages::my_articles;
 use crate::{
@@ -97,7 +99,7 @@ pub async fn do_login_command(
     .fetch_one(state.db())
     .await?;
 
-    let base_url = "https://guiding-raptor-infinitely.ngrok-free.app";
+    let base_url = state.base_url;
     let url = format!(
         "{base_url}/slack/login?slack_user_link={}",
         slack_user_link.slack_user_link_id
@@ -114,9 +116,37 @@ pub async fn do_article_command(
     state: AppState,
     json: SlackCommandRequest,
 ) -> color_eyre::Result<Json<Value>> {
+    let existing_user = sqlx::query_as!(
+        User,
+        "SELECT Users.* FROM SlackUserAssociation JOIN Users USING (user_id) WHERE slack_user_id = $1",
+        json.user_id
+    )
+    .fetch_optional(state.db())
+    .await?;
+
+    let Some(existing_user) = existing_user else {
+        return Ok(Json(serde_json::json!({
+            "response_type": "in_channel",
+            "text": "You need to login first"
+        })));
+    };
+
+    let url = json.text.trim();
+
+    let page = cores::urls::add_url(&state.db, url, existing_user.user_id, &true).await?;
+    let page_id: uuid::Uuid = page.page().page_id;
+
+    let process_article = ProcessArticle { page_id };
+    process_article
+        .enqueue(state.clone(), "insert_article_handler".to_string())
+        .await?;
+
+    let base_url = state.base_url;
+    let url = format!("{base_url}/articles/{page_id}");
+
     Ok(Json(serde_json::json!({
         "response_type": "in_channel",
-        "text": "Article command"
+        "text": format!("Article added view here: {url}")
     })))
 }
 
