@@ -1,7 +1,6 @@
 use crate::AppState;
 use cja::{app_state::AppState as _, jobs::Job};
 use cores::openai_utils::generate_categories;
-use miette::IntoDiagnostic;
 
 use url::Url;
 use uuid::Uuid;
@@ -19,18 +18,17 @@ pub struct ProcessArticle {
 impl Job<AppState> for ProcessArticle {
     const NAME: &'static str = "process_article::ProcessArticle";
 
-    async fn run(&self, app_state: AppState) -> miette::Result<()> {
+    async fn run(&self, app_state: AppState) -> cja::Result<()> {
         let db = app_state.db();
 
         let page = sqlx::query_as!(Page, "SELECT * FROM pages WHERE page_id = $1", self.page_id)
             .fetch_one(db)
-            .await
-            .into_diagnostic()?;
+            .await?;
 
-        let raw_html = download_raw_html(&page.url).await.unwrap();
-        let url_parsed = Url::parse(&page.url).unwrap();
+        let raw_html = download_raw_html(&page.url).await?;
+        let url_parsed = Url::parse(&page.url)?;
         let current_time = chrono::Utc::now();
-        let cleaned_html = clean_raw_html(&raw_html, &url_parsed).unwrap();
+        let cleaned_html = clean_raw_html(&raw_html, &url_parsed)?;
 
         let page_snapshot = sqlx::query_as!(
             PageSnapShot,
@@ -42,15 +40,12 @@ impl Job<AppState> for ProcessArticle {
             page.page_id
         )
         .fetch_one(db)
-        .await
-        .unwrap();
+        .await?;
 
-        let markdown = store_in_markdown_table(db, page_snapshot).await.unwrap();
+        let markdown = store_in_markdown_table(db, page_snapshot).await?;
         let markdown_id = markdown.markdown_id;
 
-        generate_and_store_summary(db, markdown_id, &cleaned_html)
-            .await
-            .unwrap();
+        generate_and_store_summary(db, markdown_id, &cleaned_html).await?;
 
         generate_categories(&markdown.summary).await.unwrap();
 

@@ -1,3 +1,4 @@
+use color_eyre::eyre::Context;
 pub use sqlx;
 use sqlx::postgres::PgPoolOptions;
 pub use sqlx::PgPool;
@@ -11,7 +12,7 @@ pub mod users;
 
 #[tracing::instrument(err)]
 pub async fn setup_db_pool() -> color_eyre::Result<PgPool> {
-    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let database_url = std::env::var("DATABASE_URL").context("DATABASE_URL must be set")?;
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(&database_url)
@@ -58,8 +59,8 @@ mod tests {
         }
 
         async fn create_test_db_pool() -> color_eyre::Result<TestPool> {
-            let original_database_url = std::env::var("DATABASE_URL").unwrap();
-            let mut db_url = Url::parse(&original_database_url).unwrap();
+            let original_database_url = std::env::var("DATABASE_URL")?;
+            let mut db_url = Url::parse(&original_database_url)?;
             let database_name = format!("/knowledge_test_{}", uuid::Uuid::new_v4());
             db_url.set_path(&database_name);
 
