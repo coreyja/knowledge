@@ -3,6 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use cores::{
+    category::Category,
     markdown::{self, Markdown},
     page_snapshot::PageSnapShot,
     urls::Page,
