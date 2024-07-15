@@ -3,14 +3,9 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use cores::{
-    category::Category,
-    markdown::Markdown,
     markdown::{self, Markdown},
     page_snapshot::PageSnapShot,
-    page_snapshot::PageSnapShot,
     urls::Page,
-    urls::Page,
-    users::User,
     users::User,
 };
 
