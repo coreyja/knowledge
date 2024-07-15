@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO Category (markdown_id, category, embedding) VALUES ($1, $2, $3) RETURNING *",
+  "query": "SELECT * FROM category WHERE markdown_id = $1",
   "describe": {
     "columns": [
       {
@@ -17,20 +17,24 @@
         "ordinal": 2,
         "name": "embedding",
         "type_info": "Float8Array"
+      },
+      {
+        "ordinal": 3,
+        "name": "category_id",
+        "type_info": "Uuid"
       }
     ],
     "parameters": {
       "Left": [
-        "Uuid",
-        "Text",
-        "Float8Array"
+        "Uuid"
       ]
     },
     "nullable": [
       false,
       true,
-      true
+      true,
+      false
     ]
   },
-  "hash": "51e5fc5173f678853a572b61493095e15acb365cd3a522d0c254a6ef2e5e10d5"
+  "hash": "6ee8eb40261ebd3c4b571c950017d2d507f4be630eb5aa520591078c52af6c1b"
 }

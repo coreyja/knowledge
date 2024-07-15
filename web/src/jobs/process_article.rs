@@ -1,5 +1,6 @@
 use crate::AppState;
 use cja::{app_state::AppState as _, jobs::Job};
+use cores::openai_utils::generate_categories;
 
 use url::Url;
 use uuid::Uuid;
@@ -41,10 +42,13 @@ impl Job<AppState> for ProcessArticle {
         .fetch_one(db)
         .await?;
 
+
         let markdown = store_in_markdown_table(db, page_snapshot).await?;
         let markdown_id = markdown.markdown_id;
 
         generate_and_store_summary(db, markdown_id, &cleaned_html).await?;
+
+        generate_categories(&markdown.summary).await.unwrap();
 
         Ok(())
     }
