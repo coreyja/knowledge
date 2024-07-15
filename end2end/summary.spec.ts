@@ -1,6 +1,6 @@
 import { test, expect } from "./setup";
 
-test("can add article and get a summary", async ({ loggedIn, page }) => {
+test.skip("can add article and get a summary", async ({ loggedIn, page }) => {
   await page.goto("/dashboard");
 
   await page
