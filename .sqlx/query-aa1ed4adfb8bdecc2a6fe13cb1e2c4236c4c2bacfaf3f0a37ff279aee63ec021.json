@@ -1,0 +1,41 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT m.summary, p.url, p.page_id, c.category\n        FROM category c\n        JOIN categorymarkdown cm ON c.category_id = cm.category_id\n        JOIN markdown m ON cm.markdown_id = m.markdown_id\n        JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id\n        JOIN pages p ON ps.page_id = p.page_id\n        WHERE c.category_id = $1 AND p.user_id = $2\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "summary",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "url",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "page_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 3,
+        "name": "category",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "aa1ed4adfb8bdecc2a6fe13cb1e2c4236c4c2bacfaf3f0a37ff279aee63ec021"
+}
