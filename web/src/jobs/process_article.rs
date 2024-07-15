@@ -42,7 +42,6 @@ impl Job<AppState> for ProcessArticle {
         .fetch_one(db)
         .await?;
 
-
         let markdown = store_in_markdown_table(db, page_snapshot).await?;
         let markdown_id = markdown.markdown_id;
 
