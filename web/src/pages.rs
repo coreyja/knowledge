@@ -153,10 +153,10 @@ pub async fn my_articles(
 }
 
 #[axum::debug_handler(state = AppState)]
-pub async fn my_articles(
+pub async fn my_categories(
     t: Template,
-    Path(user_id): Path<Uuid>,
     State(state): State<AppState>,
+    user: User,
 ) -> WebResult<Response> {
     info!("Fetching categories for user_id: {}", user.user_id);
 
