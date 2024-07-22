@@ -1,4 +1,4 @@
-use color_eyre::eyre::Result;
+use color_eyre::eyre::{eyre, Result};
 use readability::extractor;
 use reqwest;
 use scraper::{Html, Selector};
@@ -27,13 +27,13 @@ pub fn clean_raw_html(raw_html: &str, url: &Url) -> color_eyre::Result<String> {
     Ok(article.content)
 }
 
-pub fn extract_title(content: &str) -> Result<String> {
+pub fn extract_title(content: &str) -> Result<Option<String>> {
     let document = Html::parse_document(content);
-    let title_selector = Selector::parse("title").unwrap();
+    let title_selector =
+        Selector::parse("title").map_err(|_| eyre!("Could not make title selector"))?;
 
-    if let Some(title_element) = document.select(&title_selector).next() {
-        Ok(title_element.text().collect::<String>())
-    } else {
-        Ok("No title found".to_string())
-    }
+    Ok(document
+        .select(&title_selector)
+        .next()
+        .map(|e| e.text().collect()))
 }

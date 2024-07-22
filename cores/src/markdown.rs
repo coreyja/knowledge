@@ -27,7 +27,7 @@ pub async fn store_in_markdown_table(
 ) -> color_eyre::Result<Markdown> {
     let markdown_id = Uuid::new_v4();
     let content_md = html2md::parse_html(&page_snapshot.cleaned_html);
-    let title = extract_title(&page_snapshot.raw_html);
+    let title = extract_title(&page_snapshot.raw_html)?;
     println!("Title: {title:?}");
     let page_snapshot_id = page_snapshot.page_snapshot_id;
 
@@ -37,7 +37,7 @@ pub async fn store_in_markdown_table(
         markdown_id,
         page_snapshot_id,
         content_md,
-        title.unwrap_or_default()
+        title
     )
     .fetch_one(pool)
     .await?;
