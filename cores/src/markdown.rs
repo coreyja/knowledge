@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::category::store_in_category_table;
 use crate::openai_utils::generate_categories;
-use crate::page_snapshot::PageSnapShot;
+use crate::page_snapshot::{extract_title, PageSnapShot};
 
 #[derive(sqlx::FromRow, Debug, Clone)]
 pub struct Markdown {
@@ -27,14 +27,17 @@ pub async fn store_in_markdown_table(
 ) -> color_eyre::Result<Markdown> {
     let markdown_id = Uuid::new_v4();
     let content_md = html2md::parse_html(&page_snapshot.cleaned_html);
+    let title = extract_title(&page_snapshot.raw_html)?;
+    println!("Title: {title:?}");
     let page_snapshot_id = page_snapshot.page_snapshot_id;
 
     let markdown_result = sqlx::query_as!(
         Markdown,
-        "INSERT INTO Markdown (markdown_id, page_snapshot_id, content_md) VALUES ($1, $2, $3) RETURNING *",
+        "INSERT INTO Markdown (markdown_id, page_snapshot_id, content_md, title) VALUES ($1, $2, $3, $4) RETURNING *",
         markdown_id,
         page_snapshot_id,
-        content_md
+        content_md,
+        title
     )
     .fetch_one(pool)
     .await?;
