@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT DISTINCT c.* \n         FROM categories c\n         JOIN markdown_categories cm USING (category_id)\n         JOIN markdowns m USING (markdown_id)\n         JOIN page_snapshots ps USING (page_snapshot_id)\n         JOIN pages p USING (page_id)\n         WHERE p.user_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "category",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "embedding",
+        "type_info": "Float8Array"
+      },
+      {
+        "ordinal": 2,
+        "name": "category_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "d6c1e63624e681b5b1cc5be1c3350abafbdabbad9bf7714af13b8c502db5c40e"
+}

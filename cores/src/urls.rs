@@ -68,16 +68,16 @@ pub async fn generate_and_store_summary(
     pool: &PgPool,
     markdown_id: Uuid,
     cleaned_html: &str,
-) -> color_eyre::Result<()> {
+) -> color_eyre::Result<String> {
     let summary = generate_summary(cleaned_html).await?;
 
     sqlx::query!(
-        "UPDATE Markdown SET summary = $1 WHERE markdown_id = $2",
+        "UPDATE markdowns SET summary = $1 WHERE markdown_id = $2",
         summary,
         markdown_id
     )
     .execute(pool)
     .await?;
 
-    Ok(())
+    Ok(summary)
 }

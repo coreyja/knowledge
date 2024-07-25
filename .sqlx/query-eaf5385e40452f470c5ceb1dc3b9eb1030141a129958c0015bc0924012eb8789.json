@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT * FROM pagesnapshot WHERE page_id = $1 ORDER BY fetched_at DESC LIMIT 1",
+  "query": "SELECT * FROM page_snapshots WHERE page_id = $1 ORDER BY fetched_at DESC LIMIT 1",
   "describe": {
     "columns": [
       {
@@ -38,9 +38,9 @@
       false,
       false,
       false,
-      true,
+      false,
       false
     ]
   },
-  "hash": "6cded16187223621aa3f24ba2d1c23154ac96515349d2e6d9f068aa5d122c3c6"
+  "hash": "eaf5385e40452f470c5ceb1dc3b9eb1030141a129958c0015bc0924012eb8789"
 }

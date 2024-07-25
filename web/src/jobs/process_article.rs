@@ -1,6 +1,5 @@
 use crate::AppState;
 use cja::{app_state::AppState as _, jobs::Job};
-use cores::openai_utils::generate_categories;
 
 use url::Url;
 use uuid::Uuid;
@@ -32,7 +31,7 @@ impl Job<AppState> for ProcessArticle {
 
         let page_snapshot = sqlx::query_as!(
             PageSnapShot,
-            "INSERT INTO PageSnapShot (raw_html, fetched_at, cleaned_html, page_id) 
+            "INSERT INTO page_snapshots (raw_html, fetched_at, cleaned_html, page_id) 
         VALUES ($1, $2, $3, $4) RETURNING *",
             raw_html,
             current_time,
@@ -43,11 +42,8 @@ impl Job<AppState> for ProcessArticle {
         .await?;
 
         let markdown = store_in_markdown_table(db, page_snapshot).await?;
-        let markdown_id = markdown.markdown_id;
 
-        generate_and_store_summary(db, markdown_id, &cleaned_html).await?;
-
-        generate_categories(&markdown.summary).await.unwrap();
+        generate_and_store_summary(db, markdown.markdown_id, &cleaned_html).await?;
 
         Ok(())
     }

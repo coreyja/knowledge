@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO Category (category_id, markdown_id, category, embedding) VALUES ($1, $2, $3, $4) RETURNING *",
+  "query": "INSERT INTO markdowns (markdown_id, page_snapshot_id, content_md, title) VALUES ($1, $2, $3, $4) RETURNING *",
   "describe": {
     "columns": [
       {
@@ -10,17 +10,22 @@
       },
       {
         "ordinal": 1,
-        "name": "category",
+        "name": "title",
         "type_info": "Text"
       },
       {
         "ordinal": 2,
-        "name": "embedding",
-        "type_info": "Float8Array"
+        "name": "content_md",
+        "type_info": "Text"
       },
       {
         "ordinal": 3,
-        "name": "category_id",
+        "name": "summary",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "page_snapshot_id",
         "type_info": "Uuid"
       }
     ],
@@ -29,15 +34,16 @@
         "Uuid",
         "Uuid",
         "Text",
-        "Float8Array"
+        "Text"
       ]
     },
     "nullable": [
       false,
       true,
+      false,
       true,
       false
     ]
   },
-  "hash": "ecac4532133f7eb9f112d7801a37aa47f15669e5332701ce3a6ad35d7ab55611"
+  "hash": "fe4cb42d8449a0bc26d021a051bf66664d93e1b2ccb215fcb20af602b57f6805"
 }
