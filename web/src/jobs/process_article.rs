@@ -43,11 +43,8 @@ impl Job<AppState> for ProcessArticle {
         .await?;
 
         let markdown = store_in_markdown_table(db, page_snapshot).await?;
-        let markdown_id = markdown.markdown_id;
 
-        let summary = generate_and_store_summary(db, markdown_id, &cleaned_html).await?;
-
-        generate_categories(&summary).await.unwrap();
+        generate_and_store_summary(db, markdown.markdown_id, &cleaned_html).await?;
 
         Ok(())
     }
