@@ -215,10 +215,10 @@ pub async fn articles_by_category(
         r#"
         SELECT m.summary, p.url, p.page_id, c.category, m.title
         FROM categories c
-        JOIN markdown_categories cm ON c.category_id = cm.category_id
-        JOIN markdowns m ON cm.markdown_id = m.markdown_id
-        JOIN page_snapshots ps ON m.page_snapshot_id = ps.page_snapshot_id
-        JOIN pages p ON ps.page_id = p.page_id
+        JOIN markdown_categories cm USING (category_id)
+        JOIN markdowns m USING (markdown_id)
+        JOIN page_snapshots ps USING (page_snapshot_id)
+        JOIN pages p USING (page_id)
         WHERE c.category_id = $1 AND p.user_id = $2
         "#,
         category_id,
