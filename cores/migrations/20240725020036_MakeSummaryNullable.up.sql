@@ -1,0 +1,7 @@
+ALTER TABLE markdowns
+AlTER COLUMN summary
+DROP NOT NULL;
+
+ALTER TABLE markdowns
+AlTER COLUMN summary
+DROP DEFAULT;

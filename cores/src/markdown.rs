@@ -11,7 +11,7 @@ pub struct Markdown {
     pub page_snapshot_id: Uuid,
     pub title: Option<String>,
     pub content_md: String,
-    pub summary: String,
+    pub summary: Option<String>,
 }
 
 #[allow(clippy::module_name_repetitions)]

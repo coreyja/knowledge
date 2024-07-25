@@ -115,7 +115,11 @@ pub async fn article_detail(
             @if let Some(title) = markdown.title {
                 h1 { b { "Title: " } (title) }
             }
-            p { b { "Summary: " } (markdown.summary) }
+            @if let Some(summary) = markdown.summary {
+                p { b { "Summary: " } (summary) }
+            } @else {
+                p data-controller="loader" { "Generating summary....." }
+            }
         }
     } else {
         maud::html! {
@@ -227,7 +231,9 @@ pub async fn articles_by_category(
                         p { b { "Title: " } (title) }
                     }
                     p { b { "Category: " } (article.category) }
-                    p { b { "Summary: " } (article.summary) }
+                    @if let Some(summary) = article.summary {
+                        p { b { "Summary: " } (summary) }
+                    }
                 }
             }
         }
