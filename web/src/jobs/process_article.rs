@@ -32,7 +32,7 @@ impl Job<AppState> for ProcessArticle {
 
         let page_snapshot = sqlx::query_as!(
             PageSnapShot,
-            "INSERT INTO PageSnapShot (raw_html, fetched_at, cleaned_html, page_id) 
+            "INSERT INTO page_snapshots (raw_html, fetched_at, cleaned_html, page_id) 
         VALUES ($1, $2, $3, $4) RETURNING *",
             raw_html,
             current_time,

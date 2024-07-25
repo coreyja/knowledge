@@ -72,7 +72,7 @@ pub async fn generate_and_store_summary(
     let summary = generate_summary(cleaned_html).await?;
 
     sqlx::query!(
-        "UPDATE Markdown SET summary = $1 WHERE markdown_id = $2",
+        "UPDATE markdowns SET summary = $1 WHERE markdown_id = $2",
         summary,
         markdown_id
     )

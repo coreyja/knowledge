@@ -33,7 +33,7 @@ pub async fn store_in_markdown_table(
 
     let markdown_result = sqlx::query_as!(
         Markdown,
-        "INSERT INTO Markdown (markdown_id, page_snapshot_id, content_md, title) VALUES ($1, $2, $3, $4) RETURNING *",
+        "INSERT INTO markdowns (markdown_id, page_snapshot_id, content_md, title) VALUES ($1, $2, $3, $4) RETURNING *",
         markdown_id,
         page_snapshot_id,
         content_md,
@@ -43,12 +43,11 @@ pub async fn store_in_markdown_table(
     .await?;
 
     let category = generate_categories(&content_md).await?;
-    let category_result =
-        store_in_category_table(pool, markdown_result.markdown_id, &category).await?;
+    let category_result = store_in_category_table(pool, &category).await?;
 
     let category_markdown_result = sqlx::query_as!(
         CategoryMarkdown,
-        "INSERT INTO CategoryMarkdown (markdown_id, category_id) VALUES ($1, $2) RETURNING *",
+        "INSERT INTO markdown_categories (markdown_id, category_id) VALUES ($1, $2) RETURNING *",
         markdown_result.markdown_id,
         category_result.category_id
     )

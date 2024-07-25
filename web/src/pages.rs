@@ -72,7 +72,7 @@ pub async fn article_detail(
 
     let page_snapshot = sqlx::query_as!(
         PageSnapShot,
-        "SELECT * FROM pagesnapshot WHERE page_id = $1 ORDER BY fetched_at DESC LIMIT 1",
+        "SELECT * FROM page_snapshots WHERE page_id = $1 ORDER BY fetched_at DESC LIMIT 1",
         article.page_id
     )
     .fetch_optional(&state.db)
@@ -81,7 +81,7 @@ pub async fn article_detail(
     let markdown = if let Some(page_snapshot) = page_snapshot {
         let markdown = sqlx::query_as!(
             Markdown,
-            "SELECT * FROM markdown WHERE page_snapshot_id = $1",
+            "SELECT * FROM markdowns WHERE page_snapshot_id = $1",
             page_snapshot.page_snapshot_id
         )
         .fetch_optional(&state.db)
@@ -90,7 +90,10 @@ pub async fn article_detail(
         if let Some(markdown) = markdown {
             let categories = sqlx::query_as!(
                 Category,
-                "SELECT * FROM category WHERE markdown_id = $1",
+                "SELECT categories.*
+                FROM categories
+                JOIN markdown_categories USING (category_id)
+                WHERE markdown_id = $1",
                 markdown.markdown_id
             )
             .fetch_all(&state.db)
@@ -106,15 +109,17 @@ pub async fn article_detail(
         maud::html! {
             ul {
                 @for category in categories {
-                    li { b { "Category: " } (category.category.as_deref().unwrap_or("No category")) }
+                    li { b { "Category: " } (category.category) }
                 }
             }
-            h1 { b { "Title: " } (markdown.title.as_deref().unwrap_or("")) }
+            @if let Some(title) = markdown.title {
+                h1 { b { "Title: " } (title) }
+            }
             p { b { "Summary: " } (markdown.summary) }
         }
     } else {
         maud::html! {
-            p { "Generating snapshot....." }
+            p data-controller="loader" { "Generating snapshot....." }
         }
     };
 
@@ -162,11 +167,11 @@ pub async fn my_categories(
 
     let categories = sqlx::query!(
         "SELECT DISTINCT c.* 
-         FROM category c
-         JOIN categorymarkdown cm ON c.category_id = cm.category_id
-         JOIN markdown m ON cm.markdown_id = m.markdown_id
-         JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id
-         JOIN pages p ON ps.page_id = p.page_id
+         FROM categories c
+         JOIN markdown_categories cm USING (category_id)
+         JOIN markdowns m USING (markdown_id)
+         JOIN page_snapshots ps USING (page_snapshot_id)
+         JOIN pages p USING (page_id)
          WHERE p.user_id = $1",
         user.user_id
     )
@@ -177,7 +182,7 @@ pub async fn my_categories(
         h1 { "My Categories" }
         ul {
             @for category in categories {
-                @let category_name = category.category.unwrap_or("No category".to_string());
+                @let category_name = category.category;
                 li {
                     a href=(format!("/categories/{}", category.category_id)) { (category_name) }
                 }
@@ -199,10 +204,10 @@ pub async fn articles_by_category(
     let articles = sqlx::query!(
         r#"
         SELECT m.summary, p.url, p.page_id, c.category, m.title
-        FROM category c
-        JOIN categorymarkdown cm ON c.category_id = cm.category_id
-        JOIN markdown m ON cm.markdown_id = m.markdown_id
-        JOIN pagesnapshot ps ON m.page_snapshot_id = ps.page_snapshot_id
+        FROM categories c
+        JOIN markdown_categories cm ON c.category_id = cm.category_id
+        JOIN markdowns m ON cm.markdown_id = m.markdown_id
+        JOIN page_snapshots ps ON m.page_snapshot_id = ps.page_snapshot_id
         JOIN pages p ON ps.page_id = p.page_id
         WHERE c.category_id = $1 AND p.user_id = $2
         "#,
@@ -218,8 +223,10 @@ pub async fn articles_by_category(
             @for article in articles {
                 li {
                     a href=(format!("/articles/{}", article.page_id)) { (article.url) }
-                    p { b { "Title: " } (article.title.as_deref().unwrap_or("No title")) }
-                    p { b { "Category: " } (article.category.as_deref().unwrap_or("No category")) }
+                    @if let Some(title) = article.title {
+                        p { b { "Title: " } (title) }
+                    }
+                    p { b { "Category: " } (article.category) }
                     p { b { "Summary: " } (article.summary) }
                 }
             }

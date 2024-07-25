@@ -6,22 +6,19 @@ use crate::openai_utils::generate_embedding;
 #[derive(sqlx::FromRow, Debug)]
 pub struct Category {
     pub category_id: Uuid,
-    pub markdown_id: Uuid,
-    pub category: Option<String>,
+    pub category: String,
     pub embedding: Option<Vec<f64>>,
 }
 
 pub async fn store_in_category_table(
     pool: &PgPool,
-    markdown_id: Uuid,
     category: &str,
 ) -> color_eyre::Result<Category> {
     let embedding = generate_embedding(category).await?;
     let result = sqlx::query_as!(
         Category,
-        "INSERT INTO Category (category_id, markdown_id, category, embedding) VALUES ($1, $2, $3, $4) RETURNING *",
+        "INSERT INTO categories (category_id, category, embedding) VALUES ($1, $2, $3) RETURNING *",
         Uuid::new_v4(),
-        markdown_id,
         category.to_string(),
         &embedding
     )
