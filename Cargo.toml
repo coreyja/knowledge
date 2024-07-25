@@ -18,7 +18,7 @@ openai = { version = "1.0.0-alpha.14", features = [
 ], default-features = false }
 
 [workspace.lints.clippy]
-pedantic = "deny"
+pedantic = { level = "deny", priority = -1 }
 missing_errors_doc = "allow"
 missing_panics_doc = "allow"
 items_after_statements = "allow"
